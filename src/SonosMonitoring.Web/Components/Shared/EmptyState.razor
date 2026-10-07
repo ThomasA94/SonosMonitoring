@@ -1,0 +1,9 @@
+<div class="empty-state"><div class="empty-symbol" aria-hidden="true">◇</div><h2>@Title</h2><p>@Description</p>@ChildContent</div>
+@code {
+    /// <summary>Gets or sets the empty-state title.</summary>
+    [Parameter] public string Title { get; set; } = "";
+    /// <summary>Gets or sets a concrete next-step hint.</summary>
+    [Parameter] public string Description { get; set; } = "";
+    /// <summary>Gets or sets an optional recovery action.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject SonosMonitoring.Web.Security.WebAccessOptions Access
+
+<a class="skip-link" href="#main-content">@Text["SkipContent"]</a>
+<div class="shell">
+    <aside class="sidebar">
+        <a class="brand" href="/" aria-label="SonosMonitoring"><span class="brand-mark">s<span>m</span></span><span>sonos<span class="brand-light">monitoring</span></span></a>
+        <div class="sidebar-caption">@Text["Workspace"]</div>
+        <nav aria-label="@Text["Navigation"]">
+            <NavLink href="/" Match="NavLinkMatch.All"><span aria-hidden="true">◫</span>@Text["Overview"]</NavLink>
+            <NavLink href="/devices"><span aria-hidden="true">▥</span>@Text["Devices"]</NavLink>
+            <NavLink href="/groups"><span aria-hidden="true">◇</span>@Text["Topology"]</NavLink>
+            <NavLink href="/media"><span aria-hidden="true">♫</span>@Text["MediaControl"]</NavLink>
+            <NavLink href="/metrics"><span aria-hidden="true">⌁</span>@Text["Metrics"]</NavLink>
+            <NavLink href="/history"><span aria-hidden="true">◷</span>@Text["History"]</NavLink>
+            <NavLink href="/alerts"><span aria-hidden="true">♧</span>@Text["Alerts"]</NavLink>
+            <NavLink href="/snapshots"><span aria-hidden="true">▣</span>@Text["Snapshots"]</NavLink>
+            <NavLink href="/system"><span aria-hidden="true">⚙</span>@Text["System"]</NavLink>
+            <NavLink href="/logs"><span aria-hidden="true">≡</span>@Text["ApplicationLogs"]</NavLink>
+            <NavLink href="/settings"><span aria-hidden="true">☷</span>@Text["Settings"]</NavLink>
+        </nav>
+        <div class="sidebar-bottom"><span class="status-dot"></span>@Text["LocalInstallation"]<small>@Text["LocalSonosAccess"]</small></div>
+    </aside>
+    <div class="workspace">
+        <header class="topbar">
+            <span class="topbar-label">@Text["Installation"] <span class="divider">/</span> <strong>@Text["Monitoring"]</strong></span>
+            <div class="topbar-actions">
+                <form method="post" action="/culture">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="returnUrl" value="@("/" + Navigation.ToBaseRelativePath(Navigation.Uri))" />
+                    <button name="culture" value="de" lang="de" aria-label="Deutsch" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "de" ? "language active" : "language")">DE</button>
+                    <button name="culture" value="en" lang="en" aria-label="English" class="@(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "en" ? "language active" : "language")">EN</button>
+                </form>
+                @if (Access.RequiresLogin)
+                {
+                    <form method="post" action="/logout"><AntiforgeryToken /><button class="plain-button">@Text["Logout"]</button></form>
+                }
+            </div>
+        </header>
+        <main id="main-content" tabindex="-1">@Body</main>
+        <footer>SonosMonitoring <span>·</span> @Text["Footer"]</footer>
+    </div>
+</div>

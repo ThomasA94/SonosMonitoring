@@ -1,0 +1,42 @@
+@inject IJSRuntime JavaScript
+@inject BrowserTimeZone TimeZone
+
+<MudThemeProvider Theme="Theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<p class="muted browser-time-zone" data-time-zone="@TimeZone.Id">@Text["BrowserTimeZone"]: @(TimeZone.IsDetected ? TimeZone.Id : Text["TimeZoneFallback"])</p>
+
+@code {
+    /// <summary>Gets or sets the callback that redraws the owning page after browser zone detection.</summary>
+    [Parameter] public EventCallback OnTimeZoneChanged { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == false)
+        {
+            return;
+        }
+
+        try
+        {
+            this.TimeZone.Set(await this.JavaScript.InvokeAsync<string?>("sonosTimeZone"));
+        }
+        catch (Exception exception) when (exception is JSException or OperationCanceledException)
+        {
+            this.TimeZone.Set(null);
+        }
+
+        await this.OnTimeZoneChanged.InvokeAsync();
+        this.StateHasChanged();
+    }
+
+    /// <summary>Gets the installation's shared visual palette with locally available system fonts.</summary>
+    private static MudTheme Theme { get; } = new()
+    {
+        PaletteLight = new PaletteLight { Primary = "#285d4d", Secondary = "#477887", Background = "#f5f6f3", Surface = "#ffffff", TextPrimary = "#202c29" },
+        Typography = new Typography { Default = new DefaultTypography { FontFamily = ["Segoe UI", "Arial", "sans-serif"] } },
+        LayoutProperties = new LayoutProperties { DefaultBorderRadius = "12px" },
+    };
+}

@@ -1,0 +1,174 @@
+@page "/metrics"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using SonosMonitoring.Contracts.Metrics
+@using SonosMonitoring.Web.Metrics
+@using SonosMonitoring.Web.Components.Metrics
+@using SonosMonitoring.Web.Components.Collection
+@inject MonitoringApiClient Api
+@inject BrowserTimeZone TimeZone
+@implements IAsyncDisposable
+<UiProviders OnTimeZoneChanged="InitializeLocalPeriod" />
+<PageTitle>@Text["Metrics"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["Metrics"]" Description="@Text["MetricsDescription"]" />
+<RequestState Busy="_busy" Error="@_error" />
+<div class="panel filter-bar">
+    <label class="field grow">@Text["Devices"]<select aria-label="@Text["Devices"]" @bind="_device" disabled="@_busy"><option value="">@Text["SelectDevice"]</option>@foreach (var device in _devices) { <option value="@device.DeviceId">@(device.RoomName ?? device.DeviceId)</option> }</select></label>
+    <label class="field">@Text["Metric"]<select aria-label="@Text["Metric"]" @bind="_metric" disabled="@_busy">@foreach (var metric in _catalog) { <option value="@metric.Selector">@Text["MetricName_" + metric.Selector] (@metric.Unit)</option> }</select></label>
+    <label class="field">@Text["Period"]<select @bind="_hours" disabled="@_busy"><option value="1">@Text["LastHour"]</option><option value="24">@Text["LastDay"]</option><option value="168">@Text["LastWeek"]</option><option value="720">@Text["LastMonth"]</option><option value="8760">@Text["LastYear"]</option><option value="0">@Text["Custom"]</option></select></label>
+    @if (_hours == 0)
+    {
+        <label class="field">@Text["HistoryStart"] (@TimeZone.Id)<input type="datetime-local" @bind="_start" disabled="@(_busy || _timeZoneReady == false)" /></label>
+        <label class="field">@Text["HistoryEnd"] (@TimeZone.Id)<input type="datetime-local" @bind="_end" disabled="@(_busy || _timeZoneReady == false)" /></label>
+    }
+    <label class="field">@Text["Interface"]<select @bind="_interface" disabled="@(_busy || SelectedMetric?.Scope != "interface")"><option value="">@Text["All"]</option>@foreach (var name in _devices.FirstOrDefault(device => device.DeviceId == _device)?.Interfaces.Select(entry => entry.Interface) ?? []) { <option value="@name">@name</option> }</select></label>
+    @if (SelectedMetric?.Scope == "source")
+    {
+        <label class="field">@Text["Source"]<select aria-label="@Text["Source"]" @bind="_source" disabled="@_busy"><option value="">@Text["All"]</option>@foreach (string source in Sources) { <option value="@source">@Text["SourceName_" + source]</option> }</select></label>
+    }
+    <MudButton OnClick="QueryAsync" Disabled="@(_busy || _device.Length == 0 || SelectedMetric is null || (_hours == 0 && _timeZoneReady == false))" Variant="Variant.Filled" Color="Color.Primary">@Text["Query"]</MudButton>
+</div>
+<label class="toolbar"><input type="checkbox" @bind="_autoRefresh" /> @Text["AutoRefreshCharts"]</label>
+@if (_response is not null)
+{
+    @if (_series.Any(series => series.Points.Any(point => point.Value is not null))) { <HistoryChart Response="_response" Series="_series" /> }
+    else
+    {
+        <div class="panel"><EmptyState Title="@Text["NoMeasurements"]" Description="@Text["NoMeasurementsHint"]" />
+            @if (_devices.FirstOrDefault(device => device.DeviceId == _device) is { } device)
+            {
+                <DeviceLiveSummary Device="device" />
+                <p><a class="monitoring-link" href="@("/devices/" + Uri.EscapeDataString(device.DeviceId) + "#monitoring")">@Text["ReviewMonitoring"] →</a></p>
+            }
+        </div>
+    }
+}
+else if (_busy == false) { <EmptyState Title="@Text["SelectDevice"]" Description="@Text["MetricHint"]" /> }
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private IReadOnlyList<DeviceSnapshotDto> _devices = [];
+    private IReadOnlyList<MetricSeries> _series = [];
+    private MetricHistoryResponse? _response;
+    private string? _error;
+    private string _device = "";
+    private string _metric = "receive_rate";
+    private string _interface = "";
+    private int _hours = 24;
+    private DateTime _start = DateTime.UtcNow.AddDays(-1);
+    private DateTime _end = DateTime.UtcNow;
+    private bool _busy;
+    private bool _autoRefresh;
+    private bool _timeZoneReady;
+    private Task? _polling;
+    private string _source = "";
+    private IReadOnlyList<MetricCatalogItem> _catalog = [];
+    /// <summary>Initializes custom wall-clock inputs after browser zone detection or its UTC fallback.</summary>
+    private void InitializeLocalPeriod()
+    {
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        this._start = this.TimeZone.Convert(now.AddDays(-1)).DateTime;
+        this._end = this.TimeZone.Convert(now).DateTime;
+        this._timeZoneReady = true;
+        this.StateHasChanged();
+    }
+    /// <summary>Gets the backend-owned scope of the selected history query.</summary>
+    private MetricCatalogItem? SelectedMetric => this._catalog.FirstOrDefault(metric => metric.Selector == this._metric);
+    /// <summary>Gets source filters supported by the bounded history API.</summary>
+    private static string[] Sources { get; } = ["description", "ifconfig", "topology", "wireless", "ethernet", "playback", "volume"];
+    /// <summary>Gets or sets an optional device detail deep link.</summary>
+    [SupplyParameterFromQuery(Name = "device")] public string? Device { get; set; }
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        this._busy = true;
+        var result = await this.Api.GetAsync<CollectorSnapshotDto>("api/collection", this._lifetime.Token);
+        this._error = result.ErrorCode;
+        this._devices = result.Value?.Devices ?? [];
+        var catalog = await this.Api.GetAsync<MetricCatalogResponse>("api/metrics/history/catalog", this._lifetime.Token);
+        this._catalog = catalog.Value?.Metrics ?? [];
+        this._error ??= catalog.ErrorCode;
+        this._device = this.Device ?? this._devices.FirstOrDefault()?.DeviceId ?? "";
+        this._busy = false;
+        if (this._device.Length > 0 && this.SelectedMetric is not null)
+        {
+            await this.QueryAsync();
+        }
+        this._polling = this.PollAsync();
+    }
+    /// <summary>Queries a bounded resolution appropriate to the chosen range without changing metric semantics.</summary>
+    private async Task QueryAsync()
+    {
+        if (this._busy || this._lifetime.IsCancellationRequested || this.SelectedMetric is null) { return; }
+        this._busy = true;
+        DateTimeOffset end = DateTimeOffset.UtcNow;
+        DateTimeOffset start = end.AddHours(-this._hours);
+        if (this._hours == 0 && (this.TimeZone.TryToUtc(this._end, out end) == false || this.TimeZone.TryToUtc(this._start, out start) == false))
+        {
+            this._error = "history.local-time.invalid";
+            this._busy = false;
+            return;
+        }
+        if (end <= start || end - start > TimeSpan.FromDays(4000))
+        {
+            this._error = "history.query.invalid";
+            this._busy = false;
+            return;
+        }
+        int step = Math.Max(15, (int)Math.Ceiling((end - start).TotalSeconds / 720));
+        string path = "api/metrics/history?metric=" + this._metric + "&deviceKey=" + Uri.EscapeDataString(this._device) +
+            "&start=" + Uri.EscapeDataString(start.ToString("O", CultureInfo.InvariantCulture)) + "&end=" + Uri.EscapeDataString(end.ToString("O", CultureInfo.InvariantCulture)) +
+            "&stepSeconds=" + step.ToString(CultureInfo.InvariantCulture);
+        if (this.SelectedMetric.Scope == "interface" && this._interface.Length > 0 && this._devices.FirstOrDefault(device => device.DeviceId == this._device)?.Interfaces.Any(entry => entry.Interface == this._interface) == true)
+        {
+            path += "&networkInterface=" + Uri.EscapeDataString(this._interface);
+        }
+        if (this.SelectedMetric.Scope == "source" && this._source.Length > 0)
+        {
+            path += "&sourceFilter=" + Uri.EscapeDataString(this._source);
+        }
+        var result = await this.Api.GetAsync<MetricHistoryResponse>(path, this._lifetime.Token);
+        this._error = result.ErrorCode;
+        if (result.IsSuccess)
+        {
+            try
+            {
+                this._series = MetricMatrix.Parse(result.Value!);
+                this._response = result.Value;
+            }
+            catch (Exception exception) when (exception is System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException or ArgumentOutOfRangeException or OverflowException)
+            {
+                this._error = "response.invalid";
+            }
+        }
+        this._busy = false;
+    }
+    /// <summary>Refreshes relative charts sequentially and stops when navigation cancels the page.</summary>
+    private async Task PollAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+            while (await timer.WaitForNextTickAsync(this._lifetime.Token))
+            {
+                if (this._autoRefresh && this._hours != 0)
+                {
+                    await this.InvokeAsync(async () =>
+                    {
+                        var snapshot = await this.Api.GetAsync<CollectorSnapshotDto>("api/collection", this._lifetime.Token);
+                        if (snapshot.IsSuccess) { this._devices = snapshot.Value!.Devices; }
+                        await this.QueryAsync();
+                        this.StateHasChanged();
+                    });
+                }
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await this._lifetime.CancelAsync();
+        if (this._polling is not null) { await this._polling; }
+        this._lifetime.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

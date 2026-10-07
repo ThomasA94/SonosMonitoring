@@ -1,0 +1,59 @@
+services:
+  api:
+    image: sonosmonitoring-api:local
+    restart: unless-stopped
+    environment:
+      SONOSMONITORING_CONFIG: /config/backend.json
+      CollectionSettings__Path: /app/collector-data/settings.json
+      ApplicationLogs__Directory: /app/application-logs
+      urls: http://0.0.0.0:8080
+    volumes:
+      - ../.local/docker/backend.json:/config/backend.json:ro
+      - collector-settings:/app/collector-data
+      - application-logs:/app/application-logs
+    ports:
+      - "127.0.0.1:48080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  projections:
+    image: sonosmonitoring-projections:local
+    restart: unless-stopped
+    environment:
+      SONOSMONITORING_CONFIG: /config/projections.json
+      ApplicationLogs__Directory: /app/application-logs
+      urls: http://0.0.0.0:8080
+    volumes:
+      - ../.local/docker/projections.json:/config/projections.json:ro
+      - application-logs:/app/application-logs
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  web:
+    image: sonosmonitoring-web:local
+    restart: unless-stopped
+    environment:
+      urls: https://0.0.0.0:8443
+      AllowedHosts: localhost;127.0.0.1;[::1]
+      ApplicationLogs__Directory: /app/application-logs
+    volumes:
+      - ../.local/docker/web.json:/app/appsettings.Production.json:ro
+      - ../.local/docker/localhost.pfx:/certificates/localhost.pfx:ro
+      - ../.local/docker/data-protection:/home/app/.aspnet/DataProtection-Keys
+      - application-logs:/app/application-logs
+    ports:
+      - "127.0.0.1:48082:8443"
+    depends_on:
+      - api
+
+volumes:
+  collector-settings:
+  application-logs:

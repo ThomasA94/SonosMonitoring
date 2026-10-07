@@ -1,0 +1,13 @@
+<div class="page-heading">
+    <div><div class="eyebrow">SONOS / @Text["Monitoring"]</div><h1>@Title</h1><p>@Description</p></div>
+    <div class="heading-actions">@ChildContent</div>
+</div>
+
+@code {
+    /// <summary>Gets or sets the localized page title.</summary>
+    [Parameter] public string Title { get; set; } = "";
+    /// <summary>Gets or sets the short purpose of the page.</summary>
+    [Parameter] public string Description { get; set; } = "";
+    /// <summary>Gets or sets page-specific actions.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

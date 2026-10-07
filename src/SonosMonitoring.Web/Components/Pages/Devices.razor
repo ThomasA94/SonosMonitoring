@@ -1,0 +1,22 @@
+@page "/devices"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Devices"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["Devices"]" Description="@Text["DevicesDescription"]"><MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<div class="filter-bar panel"><label class="field grow">@Text["SearchDevices"]<input type="search" @bind="_search" @bind:event="oninput" placeholder="@Text["SearchPlaceholder"]" /></label><label class="field">@Text["SourceQuality"]<select @bind="_quality"><option value="all">@Text["All"]</option><option value="fresh">@Text["Available"]</option><option value="attention">@Text["NeedsAttention"]</option></select></label></div>
+@if (Snapshot is not null)
+{
+    <p class="results-count">@Filtered.Count() @Text["Devices"] · @Text.Time(ReceivedAt)</p>
+    @if (Filtered.Any()) { <DeviceCards Devices="Filtered" /> }
+    else { <div class="panel"><EmptyState Title="@Text["NoResults"]" Description="@Text["FilterHint"]" /></div> }
+}
+@code {
+    private string _search = "";
+    private string _quality = "all";
+    /// <summary>Gets display-only filters without creating a second device-health rule.</summary>
+    private IEnumerable<DeviceSnapshotDto> Filtered => (this.Snapshot?.Devices ?? []).Where(device =>
+        $"{device.RoomName} {device.ModelName} {device.Address} {device.DeviceId}".Contains(this._search, StringComparison.CurrentCultureIgnoreCase) &&
+        (this._quality == "all" || (device.Description.LastAttemptSucceeded && device.Description.IsStale == false) == (this._quality == "fresh")));
+}

@@ -1,0 +1,44 @@
+@page "/snapshots"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using SonosMonitoring.Web.Snapshots
+@using SonosMonitoring.Web.Components.Collection
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Snapshots"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["SnapshotTitle"]" Description="@Text["SnapshotDescription"]"><SnapshotDownload /></PageHeading>
+<section class="panel"><label class="field">@Text["OpenSnapshot"]<InputFile OnChange="OpenAsync" accept=".json,application/json" /></label><p class="muted">@Text["SnapshotHint"]</p><p class="muted">@Text["Privacy"]</p></section>
+@if (_error) { <MudAlert Severity="Severity.Error" role="alert">@Text["SnapshotInvalid"]</MudAlert> }
+@if (_document is not null)
+{
+    <MudAlert Severity="Severity.Info">@Text["Offline"] · @Text["Captured"]: @Text.Time(_document.CapturedAtUtc) · @Text["Schema"] @_document.SchemaVersion</MudAlert>
+    <div class="toolbar"><MudButton OnClick="() => _document = null">@Text["CloseSnapshot"]</MudButton></div>
+    <label class="field panel">@Text["Devices"]<select @bind="_selected">@foreach (var device in _document.Snapshot.Devices) { <option value="@device.DeviceId">@(device.RoomName ?? device.DeviceId)</option> }</select></label>
+    @if (_document.Snapshot.Devices.FirstOrDefault(device => device.DeviceId == _selected) is { } selected)
+    {
+        <DeviceObservation Device="selected" Offline="true" />
+        <GroupView Groups="selected.Groups" Devices="_document.Snapshot.Devices" Offline="true" />
+    }
+    else { <EmptyState Title="@Text["NoDevices"]" Description="@Text["Offline"]" /> }
+}
+else { <EmptyState Title="@Text["NoSnapshot"]" Description="@Text["NoSnapshotHint"]" /> }
+@code {
+    private CollectorSnapshotExportDto? _document;
+    private string _selected = "";
+    private bool _error;
+    /// <summary>Applies size and schema limits and never treats uploaded observations as live state.</summary>
+    /// <param name="args">Single selected browser file.</param>
+    private async Task OpenAsync(InputFileChangeEventArgs args)
+    {
+        this._error = false;
+        this._document = null;
+        try
+        {
+            await using var stream = args.File.OpenReadStream(SnapshotDocument.MAX_BYTES);
+            this._document = await SnapshotDocument.ReadAsync(stream);
+            this._selected = this._document.Snapshot.Devices.FirstOrDefault()?.DeviceId ?? "";
+        }
+        catch (Exception exception) when (exception is IOException or System.Text.Json.JsonException or InvalidOperationException)
+        {
+            this._error = true;
+        }
+    }
+}

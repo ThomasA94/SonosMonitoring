@@ -1,0 +1,15 @@
+@if (Busy)
+{
+    <div role="status" class="loading"><MudProgressLinear Indeterminate="true" Color="Color.Primary" /> <span>@Text["Loading"]</span></div>
+}
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-4" role="alert">@Text.Error(Error) <span class="technical-code">@Error</span> @Text["LastDataHint"]</MudAlert>
+}
+
+@code {
+    /// <summary>Gets or sets whether a bounded request is running.</summary>
+    [Parameter] public bool Busy { get; set; }
+    /// <summary>Gets or sets the last safe API error code.</summary>
+    [Parameter] public string? Error { get; set; }
+}

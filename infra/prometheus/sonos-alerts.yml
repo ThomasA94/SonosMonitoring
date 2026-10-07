@@ -1,0 +1,133 @@
+groups:
+  - name: sonosmonitoring
+    interval: 15s
+    rules:
+      # Gating is per scrape target, never across unrelated collectors.
+      - record: sonos:collector_observing
+        expr: |
+          (up{job="sonosmonitoring-api"} == 1)
+          and on (job, instance) (sonos_collector_enabled{job="sonosmonitoring-api"} == 1)
+          and on (job, instance)
+          ((time() - sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api"})
+            <= on (job, instance) sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api"})
+
+      - alert: SonosApiUnavailable
+        expr: up{job="sonosmonitoring-api"} == 0
+        for: 2m
+        keep_firing_for: 1m
+        labels:
+          severity: warning
+          scope: collection
+        annotations:
+          summary: SonosMonitoring metrics endpoint is unavailable.
+
+      - alert: SonosCollectorInterrupted
+        expr: |
+          ((up{job="sonosmonitoring-api"} == 1)
+            and on (job, instance) (sonos_collector_enabled{job="sonosmonitoring-api"} == 1))
+          unless on (job, instance) sonos:collector_observing
+        for: 2m
+        keep_firing_for: 1m
+        labels:
+          severity: warning
+          scope: collection
+        annotations:
+          summary: Enabled Sonos collector has no current heartbeat.
+
+      - alert: SonosDeviceDescriptionUnavailable
+        expr: |
+          (sonos_device_probe_success{job="sonosmonitoring-api"} == 0)
+          and on (job, instance) sonos:collector_observing
+        for: 5m
+        keep_firing_for: 2m
+        labels:
+          severity: warning
+          scope: device
+        annotations:
+          summary: Sonos player description remains unavailable to the collector.
+
+      # Preserve the original firing ActiveAt value while the source alert is firing.
+      - record: sonos:alert_firing_started_timestamp_seconds
+        expr: |
+          ALERTS_FOR_STATE{
+            job="sonosmonitoring-api",
+            alertname=~"SonosApiUnavailable|SonosCollectorInterrupted|SonosDeviceDescriptionUnavailable"
+          }
+          and on (alertname, job, instance, device_id)
+          ALERTS{
+            job="sonosmonitoring-api",
+            alertstate="firing",
+            alertname=~"SonosApiUnavailable|SonosCollectorInterrupted|SonosDeviceDescriptionUnavailable"
+          }
+
+      - alert: SonosApiRecovered
+        expr: |
+          (
+            max_over_time(sonos:alert_firing_started_timestamp_seconds{
+              alertname="SonosApiUnavailable"
+            }[24h])
+            and on (job, instance) (up{job="sonosmonitoring-api"} == 1)
+          )
+          unless on (job, instance)
+          ALERTS{
+            job="sonosmonitoring-api",
+            alertname="SonosApiUnavailable",
+            alertstate=~"pending|firing"
+          }
+        for: 1m
+        labels:
+          severity: info
+          scope: collection
+        annotations:
+          summary: SonosMonitoring metrics endpoint has recovered.
+
+      - alert: SonosCollectorRecovered
+        expr: |
+          (
+            max_over_time(sonos:alert_firing_started_timestamp_seconds{
+              alertname="SonosCollectorInterrupted"
+            }[24h])
+            and on (job, instance) sonos:collector_observing
+          )
+          unless on (job, instance)
+          ALERTS{
+            job="sonosmonitoring-api",
+            alertname="SonosCollectorInterrupted",
+            alertstate=~"pending|firing"
+          }
+        for: 1m
+        labels:
+          severity: info
+          scope: collection
+        annotations:
+          summary: Sonos collector heartbeat has resumed.
+
+      - alert: SonosDeviceDescriptionRecovered
+        expr: |
+          (
+            max_over_time(sonos:alert_firing_started_timestamp_seconds{
+              alertname="SonosDeviceDescriptionUnavailable"
+            }[24h])
+            and on (job, instance, device_id)
+            (
+              (sonos_device_probe_success{job="sonosmonitoring-api"} == 1)
+              and on (job, instance, device_id)
+              (sonos_source_observation_fresh{
+                job="sonosmonitoring-api",
+                source="description"
+              } == 1)
+              and on (job, instance) sonos:collector_observing
+            )
+          )
+          unless on (job, instance, device_id)
+          ALERTS{
+            job="sonosmonitoring-api",
+            alertname="SonosDeviceDescriptionUnavailable",
+            alertstate=~"pending|firing"
+          }
+        for: 1m
+        labels:
+          severity: info
+          scope: device
+        annotations:
+          summary: Sonos player description was successfully observed again.

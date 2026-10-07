@@ -1,0 +1,24 @@
+[Unit]
+Description=SonosMonitoring projection worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=sonosmonitoring
+Group=sonosmonitoring
+WorkingDirectory=/opt/sonosmonitoring/projections
+Environment=SONOSMONITORING_CONFIG=/etc/sonosmonitoring/projections.json
+ExecStart=/usr/bin/dotnet /opt/sonosmonitoring/projections/SonosMonitoring.Projections.dll
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,190 @@
+@using SonosMonitoring.Contracts.Monitoring
+@using SonosMonitoring.Web.Monitoring
+@implements IDisposable
+@inject MonitoringApiClient Api
+<section class="panel" id="monitoring">
+    <h2>@Text["Policy"]</h2><p class="muted">@Text["PolicyHint"]</p>
+    <RequestState Busy="_busy" Error="@_error" />
+    @if (_loaded)
+    {
+        <p>@Text[_policy is null ? "NoPolicy" : _policy.Enabled ? "Enabled" : "Disabled"]</p>
+        @if (_policy is not null) { <p class="muted">@Text["Sequence"] @_policy.EventSequence · @Text.Time(_policy.UpdatedAtUtc)</p> }
+        @if (_receipt is not null && _visible == false)
+        {
+            <MudAlert Severity="Severity.Info">@Text["ProjectionPending"]</MudAlert>
+            <MudButton OnClick="WaitAsync" Disabled="_busy">@Text["CheckProjection"]</MudButton>
+        }
+        else if (_action is not null)
+        {
+            <MudAlert Severity="Severity.Warning">@Text["UnknownCommit"]</MudAlert>
+            <MudButton OnClick="SendAsync" Disabled="_busy" Variant="Variant.Filled" Color="Color.Primary">@Text["RetryAction"]</MudButton>
+        }
+        else if (_policy is not null && _token is null)
+        {
+            <MudAlert Severity="Severity.Warning">@Text["TokenMissing"]</MudAlert>
+        }
+        else if (_confirmDisable)
+        {
+            <div class="confirmation" role="group" aria-label="@Text["ConfirmDisable"]"><h3>@Text["ConfirmDisable"]</h3><p>@Text["ConfirmDisableHint"]</p>
+                <MudButton OnClick="DisableAsync" Disabled="_busy" Color="Color.Error" Variant="Variant.Filled">@Text["Confirm"]</MudButton>
+                <MudButton OnClick="() => _confirmDisable = false" Disabled="_busy">@Text["Cancel"]</MudButton>
+            </div>
+        }
+        else
+        {
+            @if (_policy?.Enabled == true)
+            {
+                <p>@Text["Interval"]: @_policy.IntervalSeconds</p>
+                <MudButton OnClick="() => _confirmDisable = true" Disabled="_busy" Variant="Variant.Outlined">@Text["DisableMonitoring"]</MudButton>
+            }
+            else
+            {
+                <label class="field compact">@Text["Interval"]<input type="number" @bind="_interval" disabled="@_busy" /></label>
+                <MudButton OnClick="EnableAsync" Disabled="_busy" Variant="Variant.Filled" Color="Color.Primary">@Text["EnableMonitoring"]</MudButton>
+            }
+        }
+        @if (_visible) { <p role="status" class="success-message">@Text["Saved"]</p> }
+    }
+    <MudButton OnClick="LoadAsync" Disabled="@(_busy || _action is not null || (_receipt is not null && _visible == false))">@Text["Reload"]</MudButton>
+</section>
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private MonitoringResponse? _policy;
+    private MonitoringAccepted? _receipt;
+    private MonitoringAction? _action;
+    private string? _token;
+    private string? _error;
+    private string? _device;
+    private int _interval = 15;
+    private bool _busy;
+    private bool _loaded;
+    private bool _confirmDisable;
+    private bool _visible;
+
+    /// <summary>Gets or sets the selected canonical device identity.</summary>
+    [Parameter, EditorRequired] public string DeviceKey { get; set; } = "";
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        if (this._device != this.DeviceKey)
+        {
+            this._device = this.DeviceKey;
+            await this.LoadAsync();
+        }
+    }
+
+    /// <summary>Obtains a policy and the persisted token for its displayed position.</summary>
+    private async Task LoadAsync()
+    {
+        this._busy = true;
+        var result = await this.Api.GetAsync<MonitoringResponse>("api/monitoring/" + Uri.EscapeDataString(this.DeviceKey), this._lifetime.Token);
+        this._error = result.StatusCode == 404 ? null : result.ErrorCode;
+        this._loaded = result.IsSuccess || result.StatusCode == 404;
+        if (this._loaded)
+        {
+            this._policy = result.Value;
+            this._token = result.Value?.ConcurrencyToken;
+            this._interval = result.Value?.IntervalSeconds ?? 15;
+            this._receipt = null;
+            this._visible = false;
+        }
+        this._busy = false;
+    }
+
+    /// <summary>Captures a new activation after the user reviewed the displayed state.</summary>
+    private async Task EnableAsync()
+    {
+        this._receipt = null;
+        this._action = new(this.DeviceKey, true, this._interval, this._token);
+        await this.SendAsync();
+    }
+
+    /// <summary>Captures a deactivation only after explicit in-page confirmation.</summary>
+    private async Task DisableAsync()
+    {
+        this._receipt = null;
+        this._confirmDisable = false;
+        this._action = new(this.DeviceKey, false, this._interval, this._token);
+        await this.SendAsync();
+    }
+
+    /// <summary>Keeps retries stable on ambiguous failures and never resubmits a received commit.</summary>
+    private async Task SendAsync()
+    {
+        if (this._busy || this._action is null)
+        {
+            return;
+        }
+        this._busy = true;
+        this._visible = false;
+        var result = await this._action.SendAsync(this.Api, this._lifetime.Token);
+        this._error = result.StatusCode == 409 ? "request.conflict" : result.ErrorCode;
+        if (result.IsSuccess)
+        {
+            this._receipt = result.Value;
+            this._token = result.Value!.ConcurrencyToken;
+            this._action = null;
+        }
+        else if (result.StatusCode is >= 400 and < 500)
+        {
+            this._action = null;
+            if (result.StatusCode == 409)
+            {
+                this._loaded = false;
+            }
+        }
+        this._busy = false;
+        if (this._receipt is not null)
+        {
+            await this.WaitAsync();
+        }
+    }
+
+    /// <summary>Polls at most five times outside the aggregate lock, retaining the receipt on timeout.</summary>
+    private async Task WaitAsync()
+    {
+        if (this._receipt is null || this._busy)
+        {
+            return;
+        }
+        this._busy = true;
+        try
+        {
+            for (int attempt = 0; attempt < 5; attempt++)
+            {
+                var result = await this.Api.GetAsync<MonitoringResponse>("api/monitoring/" + Uri.EscapeDataString(this.DeviceKey) +
+                    "?minSequence=" + this._receipt.EventSequence.ToString(CultureInfo.InvariantCulture), this._lifetime.Token);
+                this._error = result.ErrorCode;
+                if (result.IsSuccess)
+                {
+                    this._policy = result.Value;
+                    this._visible = true;
+                    this._token = result.Value!.EventSequence == this._receipt.EventSequence ? this._receipt.ConcurrencyToken : result.Value.ConcurrencyToken;
+                    return;
+                }
+                if (result.StatusCode != 202)
+                {
+                    return;
+                }
+                await Task.Delay(1000, this._lifetime.Token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Component navigation cancels bounded visibility polling.
+        }
+        finally
+        {
+            this._busy = false;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        this._lifetime.Cancel();
+        this._lifetime.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

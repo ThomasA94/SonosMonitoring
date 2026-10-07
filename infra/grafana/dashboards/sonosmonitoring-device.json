@@ -1,0 +1,1612 @@
+{
+    "annotations": {
+        "list": []
+    },
+    "description": "Read-only device and collector observations with human-readable names, separate units and explicit data-quality limits.",
+    "editable": false,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": null,
+    "links": [
+        {
+            "title": "SonosMonitoring · Übersicht",
+            "type": "link",
+            "url": "/d/sonosmonitoring-overview/sonosmonitoring-overview",
+            "includeVars": true,
+            "keepTime": true,
+            "targetBlank": false
+        },
+        {
+            "title": "SonosMonitoring · Netzwerk",
+            "type": "link",
+            "url": "/d/sonosmonitoring-network/sonosmonitoring-network",
+            "includeVars": true,
+            "keepTime": true,
+            "targetBlank": false
+        },
+        {
+            "title": "SonosMonitoring · Collector und Ereignisse",
+            "type": "link",
+            "url": "/d/sonosmonitoring-collector/sonosmonitoring-collector",
+            "includeVars": true,
+            "keepTime": true,
+            "targetBlank": false
+        }
+    ],
+    "panels": [
+        {
+            "title": "Geräteauswahl und fehlende Daten",
+            "type": "text",
+            "gridPos": {
+                "x": 0,
+                "y": 0,
+                "w": 24,
+                "h": 4
+            },
+            "options": {
+                "mode": "markdown",
+                "content": "Wählen Sie ein Gerät oder mehrere benannte Geräte. Die Übersicht bleibt nach dem **stabilen internen Schlüssel** gefiltert; Namen erscheinen in Auswahl und Legenden. Detaildiagnosen benötigen eine aktive Gerätepolicy. Nicht unterstützte oder veraltete Zustände erzeugen keine erfundenen Messwerte."
+            },
+            "id": 1
+        },
+        {
+            "title": "Geräte und Firmware",
+            "type": "table",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Namen und Metadaten aus der zuletzt validierten Beschreibung. Stabile Geräte-IDs bleiben intern. Beschreibungserfolg und Alter separat prüfen; ein bekannter Name beweist keine Erreichbarkeit.",
+            "gridPos": {
+                "x": 0,
+                "y": 4,
+                "w": 24,
+                "h": 7
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sonos_device_info{device_id=~\"${device:regex}\"}",
+                    "legendFormat": "",
+                    "range": false,
+                    "instant": true,
+                    "format": "table",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "noValue": "Unbekannt",
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": true
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "footer": {
+                    "show": false
+                }
+            },
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "Value": true,
+                            "__name__": true,
+                            "device_id": true,
+                            "job": true,
+                            "instance": true,
+                            "wifi_mode": true,
+                            "connection_type": true,
+                            "sonosnet_disabled": true,
+                            "transport_state": true,
+                            "transport_status": true
+                        },
+                        "indexByName": {
+                            "device_name": 0,
+                            "room_name": 1,
+                            "model_name": 2,
+                            "model_number": 3,
+                            "software_version": 4,
+                            "hardware_version": 5
+                        },
+                        "renameByName": {
+                            "device_name": "Gerät",
+                            "room_name": "Raum",
+                            "model_name": "Modell",
+                            "model_number": "Modellnummer",
+                            "software_version": "Software",
+                            "hardware_version": "Hardware",
+                            "wifi_mode": "WLAN-Modus",
+                            "connection_type": "Verbindung",
+                            "sonosnet_disabled": "SonosNet deaktiviert",
+                            "transport_state": "Wiedergabe",
+                            "transport_status": "Transportstatus"
+                        }
+                    }
+                }
+            ],
+            "id": 2
+        },
+        {
+            "title": "Detailmonitoring aktiviert",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Letzte bestätigte Gerätepolicy. Keine Reihe bei unbekannter Policy. In der Webgeräteansicht aktivieren; Diagnosequellen werden dann separat erfasst.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Deaktiviert",
+                                    "color": "gray",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Aktiviert",
+                                    "color": "green",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 11,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_monitoring_enabled{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_monitoring_enabled{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 3
+        },
+        {
+            "title": "Effektives Diagnoseintervall",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Minimum aus Gerätepolicy und globalem Polling-Floor. Fehlende Policy bleibt ohne Wert.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "noValue": "Keine Daten",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 12,
+                "y": 11,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_diagnostic_interval_seconds{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_diagnostic_interval_seconds{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 4
+        },
+        {
+            "title": "Gerätebeschreibung erreichbar",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Letzter abgeschlossener Beschreibungsprobeversuch. Collector-Heartbeat und API-Erreichbarkeit zusätzlich prüfen.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Nein / inaktiv",
+                                    "color": "gray",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Ja / aktiv",
+                                    "color": "blue",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 19,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_probe_success{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_probe_success{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 5
+        },
+        {
+            "title": "Dauer der letzten Beschreibungsprobe",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Lokale Dauer einschließlich begrenzter Wiederholung; beschreibt ausschließlich die Gerätebeschreibungsprobe.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "noValue": "Keine Daten",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 12,
+                "y": 19,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_probe_duration_seconds{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_probe_duration_seconds{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 6
+        },
+        {
+            "title": "Aktueller Wiedergabezustand",
+            "type": "table",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Player InstanceID 0. Nur aktuelle erfolgreiche Transportbeobachtungen, ohne Titel oder URLs. Kein Gruppenwiedergabe-Versprechen.",
+            "gridPos": {
+                "x": 0,
+                "y": 27,
+                "w": 24,
+                "h": 7
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_playback_info{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_playback_info{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "",
+                    "range": false,
+                    "instant": true,
+                    "format": "table",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "noValue": "Unbekannt",
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": true
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "footer": {
+                    "show": false
+                }
+            },
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "Value": true,
+                            "__name__": true,
+                            "device_id": true,
+                            "job": true,
+                            "instance": true,
+                            "room_name": true,
+                            "model_name": true,
+                            "model_number": true,
+                            "software_version": true,
+                            "hardware_version": true,
+                            "wifi_mode": true,
+                            "connection_type": true,
+                            "sonosnet_disabled": true
+                        },
+                        "indexByName": {
+                            "device_name": 0,
+                            "transport_state": 1,
+                            "transport_status": 2
+                        },
+                        "renameByName": {
+                            "device_name": "Gerät",
+                            "room_name": "Raum",
+                            "model_name": "Modell",
+                            "model_number": "Modellnummer",
+                            "software_version": "Software",
+                            "hardware_version": "Hardware",
+                            "wifi_mode": "WLAN-Modus",
+                            "connection_type": "Verbindung",
+                            "sonosnet_disabled": "SonosNet deaktiviert",
+                            "transport_state": "Wiedergabe",
+                            "transport_status": "Transportstatus"
+                        }
+                    }
+                }
+            ],
+            "id": 7
+        },
+        {
+            "title": "Playerlautstärke",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Master-Skala 0–100 des Players, keine akustische Lautheit und keine Gruppenlautstärke. Nur nach erfolgreicher gemeinsamer Volume-/Mute-Erhebung.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 100
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 34,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_volume{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_volume{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 8
+        },
+        {
+            "title": "Player stummgeschaltet",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Master-Mute des Players; unabhängig von Gruppen-Mute. 1 bedeutet stummgeschaltet, 0 nicht stummgeschaltet.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Nicht stumm",
+                                    "color": "blue",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Stumm",
+                                    "color": "orange",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 12,
+                "y": 34,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_muted{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_muted{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 9
+        },
+        {
+            "title": "Aktuelle WLAN- / SonosNet-Angaben",
+            "type": "table",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Nur aktuelle erfolgreiche wireless-Beobachtungen. SonosNetDisabled=false heißt lediglich nicht deaktiviert und belegt keine aktive SonosNet-Verbindung. Kein RSSI, SNR oder Meshpfad.",
+            "gridPos": {
+                "x": 0,
+                "y": 42,
+                "w": 24,
+                "h": 7
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_wireless_info{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_wireless_info{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "",
+                    "range": false,
+                    "instant": true,
+                    "format": "table",
+                    "refId": "A"
+                }
+            ],
+            "fieldConfig": {
+                "defaults": {
+                    "noValue": "Unbekannt",
+                    "custom": {
+                        "align": "left",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "filterable": true
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "showHeader": true,
+                "cellHeight": "sm",
+                "footer": {
+                    "show": false
+                }
+            },
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {
+                            "Time": true,
+                            "Value": true,
+                            "__name__": true,
+                            "device_id": true,
+                            "job": true,
+                            "instance": true,
+                            "room_name": true,
+                            "model_name": true,
+                            "model_number": true,
+                            "software_version": true,
+                            "hardware_version": true,
+                            "transport_state": true,
+                            "transport_status": true
+                        },
+                        "indexByName": {
+                            "device_name": 0,
+                            "wifi_mode": 1,
+                            "connection_type": 2,
+                            "sonosnet_disabled": 3
+                        },
+                        "renameByName": {
+                            "device_name": "Gerät",
+                            "room_name": "Raum",
+                            "model_name": "Modell",
+                            "model_number": "Modellnummer",
+                            "software_version": "Software",
+                            "hardware_version": "Hardware",
+                            "wifi_mode": "WLAN-Modus",
+                            "connection_type": "Verbindung",
+                            "sonosnet_disabled": "SonosNet deaktiviert",
+                            "transport_state": "Wiedergabe",
+                            "transport_status": "Transportstatus"
+                        }
+                    }
+                }
+            ],
+            "id": 10
+        },
+        {
+            "title": "Ethernet-Port: Link aktiv",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Nur frische erfolgreiche enetports-Beobachtungen. Link=0 bedeutet keinen aktiven Ethernetport und keinen Geräteausfall. Keine Geschwindigkeit ohne belegte Einheit.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Kein Link",
+                                    "color": "gray",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Link aktiv",
+                                    "color": "green",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 49,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_ethernet_link_up{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_ethernet_link_up{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}} / Port {{port}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 11
+        },
+        {
+            "title": "Quellen: erfolgreich und frisch",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "1 erfordert einen erfolgreichen letzten Versuch und eine Beobachtung innerhalb des Quellenbudgets. 0 kann auch deaktiviertes oder nicht unterstütztes Monitoring bedeuten; genaue Fehlerkategorie in der Web-Geräteansicht.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Nicht frisch",
+                                    "color": "orange",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Frisch",
+                                    "color": "green",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 57,
+                "w": 24,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}} / {{source}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 12
+        },
+        {
+            "title": "Quellen: letzter Versuch erfolgreich",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Erfolg der einzelnen Quellen, unabhängig vom Messwert. 0 ist kein automatischer Geräteausfall; Policy, Unsupported und Fehlergrund stehen in der Webansicht.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Kein Erfolg",
+                                    "color": "orange",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Erfolgreich",
+                                    "color": "green",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 65,
+                "w": 24,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_source_scrape_success{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_source_scrape_success{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}} / {{source}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 13
+        },
+        {
+            "title": "Alter der letzten guten Quellenbeobachtung",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Keine Reihe vor der ersten erfolgreichen Beobachtung. Steigendes Alter zusammen mit Erfolg und Frische auswerten. Detailquellen haben ein Budget von max(StaleAfter, 3 × effektives Intervall).",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "noValue": "Keine Daten",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 73,
+                "w": 24,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((clamp_min(time() - sonos_source_last_success_timestamp_seconds{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}, 0)) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((clamp_min(time() - sonos_source_last_success_timestamp_seconds{device_id=~\"${device:regex}\",source=~\"${source:regex}\"}, 0)), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}} / {{source}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 14
+        },
+        {
+            "title": "GENA: aktiviert / Abo / Initialnachricht",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "GENA betrifft den ZoneGroupTopology-Ereigniskanal. Ein Abo allein bestätigt noch keine Initialnachricht. Bei deaktiviertem GENA sind 0-Werte erwartet. Kein Lautstärke-/Wiedergabe-Abo.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ],
+                    "min": 0,
+                    "max": 1,
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "0": {
+                                    "text": "Nein / inaktiv",
+                                    "color": "gray",
+                                    "index": 0
+                                },
+                                "1": {
+                                    "text": "Ja / aktiv",
+                                    "color": "blue",
+                                    "index": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 81,
+                "w": 24,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_gena_enabled{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_gena_enabled{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "Aktiviert {{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_gena_subscribed{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_gena_subscribed{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "Abo {{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "B"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_device_gena_initial_received{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_device_gena_initial_received{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "Initialnachricht {{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "C"
+                }
+            ],
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "id": 15
+        },
+        {
+            "title": "GENA: Alter der letzten Topologienachricht",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Keine Reihe vor der ersten Nachricht. Ein ruhiges Haushaltstopologie-System kann lange keine Änderungsnachricht senden: Alter allein ist kein Ausfall. Abo, Initialnachricht, frische SOAP-Topologie und Collector prüfen.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "s",
+                    "noValue": "Keine Daten",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 89,
+                "w": 24,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((clamp_min(time() - sonos_device_gena_last_notification_timestamp_seconds{device_id=~\"${device:regex}\"}, 0)) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((clamp_min(time() - sonos_device_gena_last_notification_timestamp_seconds{device_id=~\"${device:regex}\"}, 0)), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 16
+        },
+        {
+            "title": "Ausgewähltes Interface: RX / TX",
+            "type": "timeseries",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Gleitende Prometheus-Rate über 2 Minuten, nur bei aktuell erfolgreicher und frischer ifconfig-Quelle. Anfangs fehlt die Rate bis mehrere Scrapes vorliegen. Keine Interfacessumme; Drops/Fehler belegen keine hörbaren Aussetzer.",
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "Bps",
+                    "noValue": "Keine Daten",
+                    "decimals": 2,
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "fillOpacity": 8,
+                        "spanNulls": false,
+                        "showPoints": "auto",
+                        "stacking": {
+                            "mode": "none",
+                            "group": "A"
+                        },
+                        "axisPlacement": "auto"
+                    },
+                    "links": [
+                        {
+                            "title": "Gerätedetails",
+                            "url": "/d/sonosmonitoring-device/sonosmonitoring-device?var-device=${__field.labels.device_id}&${__url_time_range}",
+                            "targetBlank": false
+                        }
+                    ]
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "x": 0,
+                "y": 97,
+                "w": 12,
+                "h": 8
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((rate(sonos_interface_receive_bytes_total{device_id=~\"${device:regex}\",interface=~\"${interface:regex}\"}[2m]) and on(device_id) (sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=\"ifconfig\"} == 1)) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((rate(sonos_interface_receive_bytes_total{device_id=~\"${device:regex}\",interface=~\"${interface:regex}\"}[2m]) and on(device_id) (sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=\"ifconfig\"} == 1)), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "RX {{device_name}} / {{interface}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((rate(sonos_interface_transmit_bytes_total{device_id=~\"${device:regex}\",interface=~\"${interface:regex}\"}[2m]) and on(device_id) (sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=\"ifconfig\"} == 1)) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((rate(sonos_interface_transmit_bytes_total{device_id=~\"${device:regex}\",interface=~\"${interface:regex}\"}[2m]) and on(device_id) (sonos_source_observation_fresh{device_id=~\"${device:regex}\",source=\"ifconfig\"} == 1)), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "TX {{device_name}} / {{interface}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "B"
+                }
+            ],
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true,
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "id": 17
+        },
+        {
+            "id": 18,
+            "title": "Gemeldete Wiedergabezustände im Zeitverlauf",
+            "type": "state-timeline",
+            "datasource": {
+                "type": "prometheus",
+                "uid": "sonosmonitoring-prometheus"
+            },
+            "description": "Nur erfolgreiche frische Transportbeobachtungen. Jede Zeile zeigt den genannten gemeldeten Zustand; Lücken sind fehlende oder andere Zustände, keine erfundenen Stopped-Werte. Player InstanceID 0.",
+            "gridPos": {
+                "x": 0,
+                "y": 105,
+                "w": 24,
+                "h": 8
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "noValue": "Keine Daten",
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "1": {
+                                    "text": "Gemeldet",
+                                    "color": "blue",
+                                    "index": 0
+                                }
+                            }
+                        }
+                    ],
+                    "custom": {
+                        "lineWidth": 0,
+                        "fillOpacity": 75,
+                        "spanNulls": false
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "mergeValues": true,
+                "showValue": "auto",
+                "alignValue": "left",
+                "rowHeight": 0.8,
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "sonosmonitoring-prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "((sonos_playback_info{device_id=~\"${device:regex}\"}) * on(device_id) group_left(device_name) sonos_device_info{device_id=~\"${device:regex}\"} @ end()) or (label_replace((sonos_playback_info{device_id=~\"${device:regex}\"}), \"device_name\", \"Unbekannter Player ($1)\", \"device_id\", \"^(.{8}).*$\") unless on(device_id) sonos_device_info{device_id=~\"${device:regex}\"} @ end())",
+                    "legendFormat": "{{device_name}} / {{transport_state}}",
+                    "range": true,
+                    "instant": false,
+                    "format": "time_series",
+                    "refId": "A"
+                }
+            ]
+        }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 41,
+    "tags": [
+        "sonosmonitoring"
+    ],
+    "templating": {
+        "list": [
+            {
+                "name": "device",
+                "label": "Gerät",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "sonosmonitoring-prometheus"
+                },
+                "definition": "query_result(sonos_device_info)",
+                "query": {
+                    "query": "query_result(sonos_device_info)",
+                    "refId": "DeviceVariable"
+                },
+                "regex": "/device_name=\"(?<text>(?:\\\\.|[^\"\\\\])+)\"|device_id=\"(?<value>[^\"]+)\"/g",
+                "refresh": 1,
+                "sort": 1,
+                "multi": true,
+                "includeAll": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "All",
+                    "value": "$__all",
+                    "selected": true
+                },
+                "options": [],
+                "skipUrlSync": false
+            },
+            {
+                "name": "interface",
+                "label": "Interface",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "sonosmonitoring-prometheus"
+                },
+                "definition": "label_values(sonos_interface_receive_bytes_total{device_id=~\"${device:regex}\"}, interface)",
+                "query": {
+                    "query": "label_values(sonos_interface_receive_bytes_total{device_id=~\"${device:regex}\"}, interface)",
+                    "refId": "InterfaceVariable"
+                },
+                "regex": "",
+                "refresh": 1,
+                "sort": 1,
+                "multi": true,
+                "includeAll": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "br0",
+                    "value": "br0",
+                    "selected": true
+                },
+                "options": [],
+                "skipUrlSync": false
+            },
+            {
+                "name": "source",
+                "label": "Quelle",
+                "type": "query",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "sonosmonitoring-prometheus"
+                },
+                "definition": "label_values(sonos_source_observation_fresh{device_id=~\"${device:regex}\"}, source)",
+                "query": {
+                    "query": "label_values(sonos_source_observation_fresh{device_id=~\"${device:regex}\"}, source)",
+                    "refId": "SourceVariable"
+                },
+                "regex": "",
+                "refresh": 1,
+                "sort": 1,
+                "multi": true,
+                "includeAll": true,
+                "allValue": ".*",
+                "current": {
+                    "text": "All",
+                    "value": "$__all",
+                    "selected": true
+                },
+                "options": [],
+                "skipUrlSync": false
+            }
+        ]
+    },
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "timepicker": {
+        "refresh_intervals": [
+            "15s",
+            "30s",
+            "1m",
+            "5m",
+            "15m",
+            "1h"
+        ]
+    },
+    "timezone": "browser",
+    "title": "SonosMonitoring · Gerätedetails",
+    "uid": "sonosmonitoring-device",
+    "version": 3
+}

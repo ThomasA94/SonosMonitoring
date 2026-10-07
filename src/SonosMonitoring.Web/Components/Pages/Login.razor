@@ -1,0 +1,10 @@
+@page "/login"
+<PageTitle>@Text["Login"] · SonosMonitoring</PageTitle>
+<div class="login-panel panel"><div class="eyebrow">SONOSMONITORING</div><h1>@Text["Login"]</h1><p>@Text["LoginHint"]</p>
+    @if (Failed) { <p class="form-error" role="alert">@Text["LoginFailed"]</p> }
+    <form method="post" action="/session"><AntiforgeryToken /><label class="field">@Text["AccessKey"]<input name="key" type="password" required maxlength="1024" autocomplete="current-password" /></label><button class="primary-button" type="submit">@Text["Login"]</button></form>
+</div>
+@code {
+    /// <summary>Gets or sets the safe login failure indicator from the redirect.</summary>
+    [SupplyParameterFromQuery] public bool Failed { get; set; }
+}

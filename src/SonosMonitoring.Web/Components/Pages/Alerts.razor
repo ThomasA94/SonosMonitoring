@@ -1,0 +1,51 @@
+@page "/alerts"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits LivePageBase
+@using SonosMonitoring.Contracts.Alerts
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Alerts"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["Alerts"]" Description="@Text["AlertsDescription"]"><MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<p class="muted">@Text["AlertsHint"]</p>
+<label class="field compact">@Text["SourceQuality"]<select @bind="_state"><option value="all">@Text["All"]</option><option value="pending">@Text["pending"]</option><option value="firing">@Text["firing"]</option><option value="recovered">@Text["recovered"]</option></select></label>
+@if (_snapshot is not null)
+{
+    <p class="results-count">@Text["Evaluated"]: @Text.Time(_snapshot.EvaluatedAtUtc)</p>
+    @foreach (var message in Messages)
+    {
+        <article class="panel alert-card @message.State" @key="message.OccurrenceIdentity"><div class="section-heading"><h2>@Text[message.RuleName]</h2><span class="source-badge">@Text[message.State]</span></div>
+            @if (message.DeviceLabel is not null)
+            {
+                var device = _devices.FirstOrDefault(device => device.MetricLabel == message.DeviceLabel);
+                @if (device is not null) { <a href="@("/devices/" + Uri.EscapeDataString(device.DeviceId))">@(device.RoomName ?? device.DeviceId) →</a> }
+                else { <p class="technical-code">@message.DeviceLabel</p> }
+            }
+            <dl><dt>@Text["ActiveSince"]</dt><dd>@Text.Time(message.ActiveAtUtc)</dd>@if (message.RecoveryAtUtc is not null) { <dt>@Text["Recovery"]</dt><dd>@Text.Time(message.RecoveryAtUtc)</dd> }<dt>@Text["Evaluated"]</dt><dd>@Text.Time(message.EvaluatedAtUtc)</dd></dl>
+            <details><summary>@Text["Details"]</summary><p class="technical-code">@message.RuleName · @message.Scope · @message.Severity<br />@message.OccurrenceIdentity</p></details>
+        </article>
+    }
+    @if (Messages.Any() == false) { <div class="panel"><EmptyState Title="@Text["NoAlerts"]" Description="@Text["NoAlertsHint"]" /></div> }
+}
+@code {
+    private AlertMessagesSnapshotDto? _snapshot;
+    private IReadOnlyList<DeviceSnapshotDto> _devices = [];
+    private string _state = "all";
+    /// <summary>Gets one entry per stable occurrence and state, without manufacturing recovery messages.</summary>
+    private IEnumerable<AlertMessageDto> Messages => (this._snapshot?.Messages ?? []).DistinctBy(message => (message.OccurrenceIdentity, message.State))
+        .Where(message => this._state == "all" || message.State == this._state).OrderBy(message => message.State == "firing" ? 0 : message.State == "pending" ? 1 : 2);
+    /// <inheritdoc />
+    protected override async Task LoadAsync()
+    {
+        var result = await this.Api.GetAsync<AlertMessagesSnapshotDto>("api/alerts", this.Lifetime);
+        this.Error = result.ErrorCode;
+        if (result.IsSuccess)
+        {
+            this._snapshot = result.Value;
+        }
+        var devices = await this.Api.GetAsync<CollectorSnapshotDto>("api/collection", this.Lifetime);
+        if (devices.IsSuccess)
+        {
+            this._devices = devices.Value!.Devices;
+        }
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "name": "sonosmonitoring-web-assets",
+    "private": true,
+    "scripts": { "vendor": "node vendor.cjs", "verify-vendor": "node vendor.cjs --check" },
+    "dependencies": { "cytoscape": "3.34.3" }
+}

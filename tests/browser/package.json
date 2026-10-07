@@ -1,0 +1,6 @@
+{
+    "name": "sonosmonitoring-browser-tests",
+    "private": true,
+    "scripts": { "test": "node frontend.cjs", "test:grafana": "node grafana.cjs" },
+    "devDependencies": { "playwright": "1.62.1" }
+}

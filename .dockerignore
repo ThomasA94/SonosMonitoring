@@ -1,0 +1,6 @@
+**
+!artifacts/
+!artifacts/publish/
+!artifacts/publish/**
+!infra/
+!infra/Dockerfile.*

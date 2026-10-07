@@ -1,0 +1,187 @@
+[
+  {
+    "Name": "sonos_media_configured",
+    "Type": "gauge",
+    "Help": "Whether this API deployment provides the media coordination slice."
+  },
+  {
+    "Name": "sonos_media_coordination_available",
+    "Type": "gauge",
+    "Help": "Whether the durable media coordination store is available at scrape time."
+  },
+  {
+    "Name": "sonos_media_operations",
+    "Type": "gauge",
+    "Help": "Retained media operations by bounded execution phase; not a count of device successes."
+  },
+  {
+    "Name": "sonos_collector_enabled",
+    "Type": "gauge",
+    "Help": "Whether background collection is enabled by configuration."
+  },
+  {
+    "Name": "sonos_collector_heartbeat_max_age_seconds",
+    "Type": "gauge",
+    "Help": "Allowed heartbeat age including sweep, poll and scheduling budgets."
+  },
+  {
+    "Name": "sonos_collector_heartbeat_timestamp_seconds",
+    "Type": "gauge",
+    "Help": "Unix time of the latest collector heartbeat."
+  },
+  {
+    "Name": "sonos_collector_sweep_duration_seconds",
+    "Type": "gauge",
+    "Help": "Duration of the latest completed bounded collection sweep."
+  },
+  {
+    "Name": "sonos_collector_probe_attempts_total",
+    "Type": "counter",
+    "Help": "Description probes in this collector generation, including discovery addresses."
+  },
+  {
+    "Name": "sonos_collector_probe_failures_total",
+    "Type": "counter",
+    "Help": "Failed description probes, including expected discovery misses."
+  },
+  {
+    "Name": "sonos_collector_probe_timeouts_total",
+    "Type": "counter",
+    "Help": "Timed-out description probes in this collector generation."
+  },
+  {
+    "Name": "sonos_discovery_addresses_probed",
+    "Type": "gauge",
+    "Help": "Unique addresses actually probed during the latest full discovery pass."
+  },
+  {
+    "Name": "sonos_discovery_devices_found",
+    "Type": "gauge",
+    "Help": "Successful validated description probes during the latest deduplicated discovery pass."
+  },
+  {
+    "Name": "sonos_device_info",
+    "Type": "gauge",
+    "Help": "Last known readable player metadata; value is 1, not evidence of current reachability."
+  },
+  {
+    "Name": "sonos_wireless_info",
+    "Type": "gauge",
+    "Help": "Current reported wireless mode and connection metadata; absent when the source is unavailable."
+  },
+  {
+    "Name": "sonos_playback_info",
+    "Type": "gauge",
+    "Help": "Current reported transport state and status; absent when the source is unavailable."
+  },
+  {
+    "Name": "sonos_device_probe_success",
+    "Type": "gauge",
+    "Help": "Whether the latest device description probe succeeded."
+  },
+  {
+    "Name": "sonos_device_probe_duration_seconds",
+    "Type": "gauge",
+    "Help": "Duration of the latest description probe including bounded retries."
+  },
+  {
+    "Name": "sonos_device_monitoring_enabled",
+    "Type": "gauge",
+    "Help": "Latest confirmed diagnostic scheduling permission; absent if unavailable."
+  },
+  {
+    "Name": "sonos_device_diagnostic_interval_seconds",
+    "Type": "gauge",
+    "Help": "Effective diagnostic polling interval including the collector floor."
+  },
+  {
+    "Name": "sonos_device_gena_enabled",
+    "Type": "gauge",
+    "Help": "Whether topology callback collection is enabled."
+  },
+  {
+    "Name": "sonos_device_gena_subscribed",
+    "Type": "gauge",
+    "Help": "Whether a topology callback lease is currently subscribed."
+  },
+  {
+    "Name": "sonos_device_gena_initial_received",
+    "Type": "gauge",
+    "Help": "Whether the topology callback initial notification was confirmed."
+  },
+  {
+    "Name": "sonos_device_gena_last_notification_timestamp_seconds",
+    "Type": "gauge",
+    "Help": "Unix time of the last topology notification, absent before any notification."
+  },
+  {
+    "Name": "sonos_device_volume",
+    "Type": "gauge",
+    "Help": "Player Master volume on its reported 0 to 100 scale; not acoustic loudness."
+  },
+  {
+    "Name": "sonos_device_muted",
+    "Type": "gauge",
+    "Help": "Player Master mute state, independent of group mute."
+  },
+  {
+    "Name": "sonos_ethernet_link_up",
+    "Type": "gauge",
+    "Help": "Reported link state for an Ethernet port; not overall device reachability."
+  },
+  {
+    "Name": "sonos_source_scrape_success",
+    "Type": "gauge",
+    "Help": "Whether the latest source attempt succeeded."
+  },
+  {
+    "Name": "sonos_source_observation_fresh",
+    "Type": "gauge",
+    "Help": "Whether the latest source attempt succeeded and its last good observation is current."
+  },
+  {
+    "Name": "sonos_source_last_success_timestamp_seconds",
+    "Type": "gauge",
+    "Help": "Unix time of the latest successful source observation."
+  },
+  {
+    "Name": "sonos_interface_receive_bytes_total",
+    "Type": "counter",
+    "Help": "Raw receive bytes reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_transmit_bytes_total",
+    "Type": "counter",
+    "Help": "Raw transmit bytes reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_receive_packets_total",
+    "Type": "counter",
+    "Help": "Raw receive packets reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_transmit_packets_total",
+    "Type": "counter",
+    "Help": "Raw transmit packets reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_receive_errors_total",
+    "Type": "counter",
+    "Help": "Raw receive errors reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_transmit_errors_total",
+    "Type": "counter",
+    "Help": "Raw transmit errors reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_receive_dropped_total",
+    "Type": "counter",
+    "Help": "Raw receive drops reported by the device interface."
+  },
+  {
+    "Name": "sonos_interface_transmit_dropped_total",
+    "Type": "counter",
+    "Help": "Raw transmit drops reported by the device interface."
+  }
+]

@@ -1,0 +1,43 @@
+name: sonosmonitoring-metrics
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.13.3@sha256:6976aa8a60fec930796ce5772b8d12da7a318a5daa8d40d69c5c7819a05eeed7
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-400d}
+    ports:
+      - "127.0.0.1:48090:9090"
+    volumes:
+      - ../.local/metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/sonos-alerts.yml:/etc/prometheus/sonos-alerts.yml:ro
+      - prometheus_data:/prometheus
+    secrets:
+      - source: sonosmonitoring_api_key
+        target: sonosmonitoring_api_key
+
+  grafana:
+    image: grafana/grafana:13.1.6-slim@sha256:89fd8413a4307b5d7a3c9b97b71d85c18d8c49f4e962d518ba0c2f8e7dd347f9
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?Set GRAFANA_ADMIN_USER before starting metrics}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD before starting metrics}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SERVER_ROOT_URL: http://localhost:48300
+    ports:
+      - "127.0.0.1:48300:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+secrets:
+  sonosmonitoring_api_key:
+    file: ../.local/metrics/api-key
+
+volumes:
+  prometheus_data:
+  grafana_data:

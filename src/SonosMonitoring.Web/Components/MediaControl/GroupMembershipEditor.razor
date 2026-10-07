@@ -1,0 +1,43 @@
+@using SonosMonitoring.Contracts.MediaControl
+@using SonosMonitoring.Web.MediaControl
+
+<fieldset class="media-controls media-membership" disabled="@Disabled">
+    <legend>@Text["MediaGrouping"]</legend>
+    <p>@Text["MediaMembershipHelp"]</p>
+    <ul class="media-list">
+        @foreach (var member in Context.MemberDeviceKeys)
+        {
+            <li @key="member"><div><strong>@Name(member)</strong>
+                @if (member == Context.CoordinatorDeviceKey) { <small>@Text["Coordinator"]</small> }
+            </div>
+                <button class="media-button" disabled="@(member == Context.CoordinatorDeviceKey || Devices.Any(device => device.DeviceId == member) == false)"
+                        aria-label="@(Text["MediaRemoveRoom"] + ": " + Name(member))" @onclick="() => Remove.InvokeAsync(member)">@Text["MediaRemoveRoom"]</button>
+            </li>
+        }
+    </ul>
+    <label>@Text["MediaAddRoom"] <select aria-label="@Text["MediaAddRoom"]" @bind="_addition"><option value="">@Text["SelectDevice"]</option>
+        @foreach (var device in Additions) { <option value="@device.DeviceId">@(device.RoomName ?? device.DeviceId)</option> }
+    </select></label>
+    <button class="media-button" disabled="@(Additions.Any(device => device.DeviceId == _addition) == false)" @onclick="() => Add.InvokeAsync(_addition)">@Text["MediaAddRoom"]</button>
+    @if (Additions.Any() == false) { <p class="muted">@Text["MediaNoStandaloneRooms"]</p> }
+    <p class="muted">@Text["MediaMembershipLimits"]</p>
+</fieldset>
+
+@code {
+    private string _addition = "";
+    /// <summary>Gets the group shown by the live playback API.</summary>
+    [Parameter, EditorRequired] public MediaTargetContextDto Context { get; set; } = default!;
+    /// <summary>Gets observed devices for labels and candidate suggestions.</summary>
+    [Parameter] public IReadOnlyList<DeviceSnapshotDto> Devices { get; set; } = [];
+    /// <summary>Gets whether the owning operation lifecycle currently prevents another action.</summary>
+    [Parameter] public bool Disabled { get; set; }
+    /// <summary>Requests a fresh check and confirmation for adding one room.</summary>
+    [Parameter] public EventCallback<string> Add { get; set; }
+    /// <summary>Requests a fresh check and confirmation for removing one member.</summary>
+    [Parameter] public EventCallback<string> Remove { get; set; }
+    /// <summary>Gets candidate rooms without treating collector evidence as write authorization.</summary>
+    private IEnumerable<DeviceSnapshotDto> Additions => PlaybackTargets.Additions(this.Devices, this.Context.MemberDeviceKeys);
+    /// <summary>Resolves a room label while preserving unknown identities.</summary>
+    /// <param name="key">Stable player identity.</param>
+    private string Name(string key) => this.Devices.FirstOrDefault(device => device.DeviceId == key)?.RoomName ?? key;
+}

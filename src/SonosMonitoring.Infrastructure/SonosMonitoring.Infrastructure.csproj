@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">     <ItemGroup>
+        <ProjectReference Include="../SonosMonitoring.Application/SonosMonitoring.Application.csproj" />
+        <PackageReference Include="Devbone.Frameworks.EventSourcing.Ddd" />
+        <PackageReference Include="Devbone.Frameworks.EventBus.Outbox" />
+        <PackageReference Include="Devbone.Frameworks.EventBus.RabbitMq" />
+        <PackageReference Include="Devbone.Frameworks.EventProjection.Client" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <InternalsVisibleTo Include="SonosMonitoring.E2E.Tests" />
+        <InternalsVisibleTo Include="SonosMonitoring.Unit.Tests" />
+    </ItemGroup>
+</Project>

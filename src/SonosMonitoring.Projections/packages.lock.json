@@ -1,0 +1,101 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Devbone.Frameworks.EventProjection": {
+        "type": "Direct",
+        "requested": "[12.5.0, )",
+        "resolved": "12.5.0",
+        "contentHash": "0eI2JrdTgOmksbX0iQZn/vUylSK8WQ8bzyY9y4BJNYi9F1sMzjHPZirMlOhFSH3UJrvO/VMES73UUmWnTd3Pkw==",
+        "dependencies": {
+          "Devbone.Frameworks.EventBus.Contracts": "1.0.1",
+          "Devbone.Frameworks.EventProjection.MongoDb": "1.1.3",
+          "Devbone.Frameworks.Privacy": "1.2.1",
+          "MongoDB.Driver": "3.10.0"
+        }
+      },
+      "Devbone.Frameworks.EventProjection.RabbitMq": {
+        "type": "Direct",
+        "requested": "[1.11.2, )",
+        "resolved": "1.11.2",
+        "contentHash": "xa3qsyYZ5jrEMQ78SSG4uQwWCA098mM0w5T7JDh5Cy3atFQb2usVU/4vtK7/awtvgYtBAhX+5MCwO2qZzAd2dA==",
+        "dependencies": {
+          "Devbone.Frameworks.EventProjection": "12.5.0",
+          "RabbitMQ.Client": "6.8.1"
+        }
+      },
+      "Devbone.Frameworks.EventBus.Contracts": {
+        "type": "Transitive",
+        "resolved": "1.0.1",
+        "contentHash": "12m81teENxY/25T3JA54RQMhB6owLfbUOZevgyceOkDciwGSeiX0Cofh/OIeYv77cgjHiyg+NL94KIupM4GG8w=="
+      },
+      "Devbone.Frameworks.EventProjection.MongoDb": {
+        "type": "Transitive",
+        "resolved": "1.1.3",
+        "contentHash": "qCvcWtRqHMDM+HQnqOwPsLvxiptFiA+HSJGPJYfrbKGV6ovmmsGADnEpt8xI/viBXid6C8ALtQRfmE4MW5oJdA==",
+        "dependencies": {
+          "MongoDB.Bson": "3.10.0"
+        }
+      },
+      "Devbone.Frameworks.Privacy": {
+        "type": "Transitive",
+        "resolved": "1.2.1",
+        "contentHash": "GC4pxbzg2rU5js5iqEVyd9beOsR5NE4uJ55yClf6Rr5YN/aFBQBC53msNdgMDjNb4OEXfEvsdEKTuF1klz4Mlw=="
+      },
+      "DnsClient": {
+        "type": "Transitive",
+        "resolved": "1.6.1",
+        "contentHash": "4H/f2uYJOZ+YObZjpY9ABrKZI+JNw3uizp6oMzTXwDw6F+2qIPhpRl/1t68O/6e98+vqNiYGu+lswmwdYUy3gg=="
+      },
+      "MongoDB.Bson": {
+        "type": "Transitive",
+        "resolved": "3.10.0",
+        "contentHash": "dpM9EXd3evUW7qPpSjfWshPYjbD26rxm+e32LWNDpRWBZZZo4WaO5Azy/Xro55u3IZ/8u1Z4hCZnlI72Y+/5jg=="
+      },
+      "MongoDB.Driver": {
+        "type": "Transitive",
+        "resolved": "3.10.0",
+        "contentHash": "FEX71Cjn6VFNI6RsQQjNBs7x2nqz9P+oXF0zspnNXzf9N1txhgEO4faIw5aAJknaObmD6cC6X42yiuOQHu27DA==",
+        "dependencies": {
+          "DnsClient": "1.6.1",
+          "MongoDB.Bson": "3.10.0",
+          "SharpCompress": "0.48.1",
+          "Snappier": "1.3.1",
+          "ZstdSharp.Port": "0.7.3"
+        }
+      },
+      "RabbitMQ.Client": {
+        "type": "Transitive",
+        "resolved": "6.8.1",
+        "contentHash": "jNsmGgmCNw2S/NzskeN2ijtGywtH4Sk/G6jWUTD5sY9SrC27Xz6BsLIiB8hdsfjeyWCa4j4GvCIGkpE8wrjU1Q=="
+      },
+      "SharpCompress": {
+        "type": "Transitive",
+        "resolved": "0.48.1",
+        "contentHash": "SqGaVniGG943Gph/gHhUQUiZPyC7y0tXZyMf0/B2oGsMav9dqs7JJOuUA+xOkwKYaWM2TM7aZQjNK91f4bX71A=="
+      },
+      "Snappier": {
+        "type": "Transitive",
+        "resolved": "1.3.1",
+        "contentHash": "DOdDQiO8YZ5rBtVLY+6CmR1yp9WYoJRgEEktPBrR0tEj9QO2djA/zv0O3DX0OZpEAfosbY8pytQ9tQUogwQsEA=="
+      },
+      "ZstdSharp.Port": {
+        "type": "Transitive",
+        "resolved": "0.7.3",
+        "contentHash": "U9Ix4l4cl58Kzz1rJzj5hoVTjmbx1qGMwzAcbv1j/d3NzrFaESIurQyg+ow4mivCgkE3S413y+U9k4WdnEIkRA=="
+      },
+      "sonosmonitoring.contracts": {
+        "type": "Project"
+      },
+      "sonosmonitoring.observability": {
+        "type": "Project",
+        "dependencies": {
+          "SonosMonitoring.Contracts": "[1.0.0, )"
+        }
+      },
+      "sonosmonitoring.platform": {
+        "type": "Project"
+      }
+    }
+  }
+}

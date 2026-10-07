@@ -1,0 +1,14 @@
+@using SonosMonitoring.Contracts.History
+@if (State is not null)
+{
+    <dl><dt>@Text["Identity"]</dt><dd class="technical-code">@State.DeviceId</dd><dt>@Text["Address"]</dt><dd>@State.Address</dd><dt>@Text["DescriptionSource"]</dt><dd>@Text[State.DescriptionState]</dd><dt>@Text["TopologySource"]</dt><dd>@Text[State.TopologyState]</dd></dl>
+    @foreach (var group in State.Groups)
+    {
+        <p><strong>@Text["Group"]:</strong> @group.GroupId<br />@Text["Coordinator"]: @group.CoordinatorDeviceId</p><ul>@foreach (var member in group.Members) { <li>@member.DeviceId @if (member.ParentDeviceId is not null) { <span>· @Text["Parent"]: @member.ParentDeviceId</span> }</li> }</ul>
+    }
+}
+else { <p>—</p> }
+@code {
+    /// <summary>Gets or sets a historical state; absence is retained instead of reconstructed.</summary>
+    [Parameter] public ObservedDeviceDto? State { get; set; }
+}

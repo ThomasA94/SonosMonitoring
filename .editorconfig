@@ -1,0 +1,55 @@
+root = true
+
+[*.{cs,csproj,props,targets,slnx}]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+
+[*.cs]
+# Style intent (human + AI guidance):
+# - Always use `this.` for member access.
+# - Do not use unary boolean negation (`!`) for condition inversion.
+#   Prefer explicit comparisons, e.g. `condition == false`.
+# - Null-forgiving operator (`null!`) is allowed where required by nullable flow analysis.
+# - Constants use UPPER_SNAKE_CASE.
+# - Add meaningful XML summaries to types and methods, including private methods.
+#   Describe every parameter in a <param> tag, including constructor parameters.
+#   Document returns, exceptions, and semantics when they add information beyond the signature.
+
+dotnet_style_qualification_for_field = true:error
+dotnet_style_qualification_for_property = true:error
+dotnet_style_qualification_for_method = true:error
+dotnet_style_qualification_for_event = true:error
+
+csharp_new_line_before_open_brace = types, methods, properties, accessors, events, anonymous_methods, control_blocks, lambdas, object_collection_array_initializers, anonymous_types
+csharp_preserve_single_line_blocks = true
+csharp_preserve_single_line_statements = false
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_indent_labels = one_less_than_current
+csharp_prefer_braces = true:error
+
+# Roslyn has no complete rule that bans unary boolean negation. This preference
+# supports explicit comparisons but code review must enforce the remaining cases.
+dotnet_style_prefer_simplified_boolean_expressions = false:error
+
+dotnet_naming_rule.constants_should_be_upper_snake_case.severity = error
+dotnet_naming_rule.constants_should_be_upper_snake_case.symbols = constants
+dotnet_naming_rule.constants_should_be_upper_snake_case.style = upper_snake_case
+
+dotnet_naming_rule.private_fields_should_be_camel_with_underscore.severity = warning
+dotnet_naming_rule.private_fields_should_be_camel_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camel_with_underscore.style = camel_with_underscore
+
+dotnet_naming_symbols.constants.applicable_kinds = field, local
+dotnet_naming_symbols.constants.required_modifiers = const
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.camel_with_underscore.required_prefix = _
+dotnet_naming_style.camel_with_underscore.capitalization = camel_case
+
+dotnet_naming_style.upper_snake_case.capitalization = all_upper
+dotnet_naming_style.upper_snake_case.word_separator = _

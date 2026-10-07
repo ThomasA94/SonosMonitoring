@@ -1,0 +1,486 @@
+{
+  "schemaVersion": 2,
+  "application": "SonosMonitoring",
+  "contracts": [
+    {
+      "contract": "sonosmonitoring.device_monitoring.created",
+      "aggregateName": "DeviceMonitoring",
+      "eventVersion": 1,
+      "lifecycle": "Created",
+      "clrType": "SonosMonitoring.Domain.Monitoring.Events.DeviceMonitoringRegistered",
+      "fields": [
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Enabled",
+          "type": "bool",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "IntervalSeconds",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "7MhAgAxIW9pca7px1VwQ3Q",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:DeviceMonitoring",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "3n87F8tTwxVBE1eITXCzGjzTPM8h3zRtL1S6LyfSbQk="
+      }
+    },
+    {
+      "contract": "sonosmonitoring.device_monitoring.disabled",
+      "aggregateName": "DeviceMonitoring",
+      "eventVersion": 1,
+      "lifecycle": "None",
+      "clrType": "SonosMonitoring.Domain.Monitoring.Events.DeviceMonitoringDisabled",
+      "fields": [
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Enabled",
+          "type": "bool",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "IntervalSeconds",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "7MhAgAxIW9pca7px1VwQ3Q",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:DeviceMonitoring",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "3n87F8tTwxVBE1eITXCzGjzTPM8h3zRtL1S6LyfSbQk="
+      }
+    },
+    {
+      "contract": "sonosmonitoring.device_monitoring.enabled",
+      "aggregateName": "DeviceMonitoring",
+      "eventVersion": 1,
+      "lifecycle": "None",
+      "clrType": "SonosMonitoring.Domain.Monitoring.Events.DeviceMonitoringEnabled",
+      "fields": [
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Enabled",
+          "type": "bool",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "IntervalSeconds",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "7MhAgAxIW9pca7px1VwQ3Q",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:DeviceMonitoring",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "3n87F8tTwxVBE1eITXCzGjzTPM8h3zRtL1S6LyfSbQk="
+      }
+    },
+    {
+      "contract": "sonosmonitoring.media_control.dispatch_started",
+      "aggregateName": "MediaOperation",
+      "eventVersion": 1,
+      "lifecycle": "None",
+      "clrType": "SonosMonitoring.Domain.MediaControl.Events.MediaControlDispatchStarted",
+      "fields": [
+        {
+          "name": "AcceptedAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Action",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Fingerprint",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Generation",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Outcome",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "PayloadJson",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ResultCode",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Status",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Step",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "AhQEKlkHfT8RvANstWDebg",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:MediaOperation",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "/wUoVyQrGbFtx8PdeEdv3werwwHGyU8p8q2xn1TMn90="
+      }
+    },
+    {
+      "contract": "sonosmonitoring.media_control.operation.created",
+      "aggregateName": "MediaOperation",
+      "eventVersion": 1,
+      "lifecycle": "Created",
+      "clrType": "SonosMonitoring.Domain.MediaControl.Events.MediaControlRequested",
+      "fields": [
+        {
+          "name": "AcceptedAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Action",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Fingerprint",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Generation",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Outcome",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "PayloadJson",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ResultCode",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Status",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Step",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "AhQEKlkHfT8RvANstWDebg",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:MediaOperation",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "/wUoVyQrGbFtx8PdeEdv3werwwHGyU8p8q2xn1TMn90="
+      }
+    },
+    {
+      "contract": "sonosmonitoring.media_control.result_recorded",
+      "aggregateName": "MediaOperation",
+      "eventVersion": 1,
+      "lifecycle": "None",
+      "clrType": "SonosMonitoring.Domain.MediaControl.Events.MediaControlResultRecorded",
+      "fields": [
+        {
+          "name": "AcceptedAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Action",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "AggregateId",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "DeviceKey",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ExpiresAtUtc",
+          "type": "datetimeoffset",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Fingerprint",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Generation",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Outcome",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "PayloadJson",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "ResultCode",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Status",
+          "type": "string",
+          "isNullable": false,
+          "isRequired": false
+        },
+        {
+          "name": "Step",
+          "type": "int",
+          "isNullable": false,
+          "isRequired": false
+        }
+      ],
+      "fieldsFingerprint": "AhQEKlkHfT8RvANstWDebg",
+      "uniqueness": {
+        "isRuntimeComputed": false,
+        "declarations": [
+          {
+            "memberName": "AggregateId",
+            "jsonName": "AggregateId",
+            "key": "AggregateId",
+            "scope": "aggregate:MediaOperation",
+            "isCaseSensitive": true,
+            "compareStrategy": "IfNotNull",
+            "useSerialization": false,
+            "composition": "value",
+            "components": [
+              "AggregateId"
+            ]
+          }
+        ],
+        "fingerprint": "/wUoVyQrGbFtx8PdeEdv3werwwHGyU8p8q2xn1TMn90="
+      }
+    }
+  ],
+  "routes": [
+    {
+      "aggregateName": "DeviceMonitoring",
+      "routeId": "device-monitoring",
+      "routeVersion": 1,
+      "stream": "sonosmonitoring.device-monitoring.events",
+      "eventBusId": "sonosmonitoring",
+      "eventStoreId": "sonosmonitoring"
+    },
+    {
+      "aggregateName": "MediaOperation",
+      "routeId": "media-control",
+      "routeVersion": 1,
+      "stream": "sonosmonitoring.media-control.events",
+      "eventBusId": "sonosmonitoring",
+      "eventStoreId": "sonosmonitoring"
+    }
+  ]
+}

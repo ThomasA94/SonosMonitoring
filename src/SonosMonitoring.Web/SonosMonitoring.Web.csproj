@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+    <ItemGroup>
+        <ProjectReference Include="../SonosMonitoring.Contracts/SonosMonitoring.Contracts.csproj" />
+        <ProjectReference Include="../SonosMonitoring.Observability/SonosMonitoring.Observability.csproj" />
+        <PackageReference Include="MudBlazor" />
+    </ItemGroup>
+</Project>

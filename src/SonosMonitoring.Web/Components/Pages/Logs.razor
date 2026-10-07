@@ -1,0 +1,76 @@
+@page "/logs"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits LivePageBase
+@using SonosMonitoring.Contracts.Diagnostics
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["ApplicationLogs"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["ApplicationLogs"]" Description="@Text["LogsDescription"]">
+    <MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton>
+</PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<section class="panel log-guidance">
+    <h2>@Text["LogsNetworkTitle"]</h2>
+    <p>@Text["LogsNetworkHint"]</p>
+    <a href="/system">@Text["System"] →</a>
+</section>
+<form class="panel log-filters section-space" @onsubmit="ApplyFiltersAsync" @onsubmit:preventDefault>
+    <label class="field">@Text["LogService"]<select @bind="_source" aria-label="@Text["LogService"]"><option value="">@Text["All"]</option><option value="api">API / Collector</option><option value="projections">Projections</option><option value="web">Web</option></select></label>
+    <label class="field">@Text["LogMinimumLevel"]<select @bind="_minimumLevel" aria-label="@Text["LogMinimumLevel"]"><option value="Information">@Text["LogInformation"]</option><option value="Warning">@Text["LogWarning"]</option><option value="Error">@Text["LogError"]</option><option value="Critical">@Text["LogCritical"]</option></select></label>
+    <label class="field">@Text["LogSearch"]<input @bind="_search" maxlength="200" type="search" /></label>
+    <button class="plain-button" type="submit" disabled="@Busy">@Text["LogApplyFilters"]</button>
+    <label class="log-auto"><input type="checkbox" @bind="AutoRefresh" /> @Text["LogAutoRefresh"]</label>
+</form>
+<p class="muted">@Text["LogsRetentionHint"]</p>
+@if (_snapshot is { } snapshot)
+{
+    <div class="log-sources" aria-label="@Text["LogSources"]">
+        @foreach (var source in snapshot.Sources)
+        {
+            <span class="source-badge">@source.Source: @Text["LogSource_" + source.State] @if (source.SkippedLines > 0) { <span>· @source.SkippedLines @Text["LogSkippedLines"]</span> }</span>
+        }
+    </div>
+    <p class="results-count" role="status">@snapshot.Entries.Count @Text["LogEntries"] · @Text["LogReadAt"] @Text.Time(_readAtUtc) @if (snapshot.Truncated) { <span>· @Text["LogsTruncated"]</span> }</p>
+    @if (snapshot.Entries.Count == 0)
+    {
+        <div class="panel"><EmptyState Title="@Text["NoLogs"]" Description="@Text["NoLogsHint"]" /></div>
+    }
+    <div class="log-list">
+        @foreach (var entry in snapshot.Entries)
+        {
+            <article class="panel log-entry" data-level="@entry.Level">
+                <div class="log-entry-meta"><time datetime="@entry.TimestampUtc.ToString("O")">@Text.Time(entry.TimestampUtc, includeSeconds: true)</time><strong>@Text["Log" + entry.Level]</strong><span>@entry.Source</span></div>
+                <p class="technical-code log-category">@entry.Category · @entry.EventId</p>
+                <pre class="log-message">@entry.Message</pre>
+            </article>
+        }
+    </div>
+}
+@code {
+    private ApplicationLogPage? _snapshot;
+    private DateTimeOffset? _readAtUtc;
+    private string _source = "";
+    private string _minimumLevel = "Information";
+    private string _search = "";
+    private string _query = "api/diagnostics/logs?limit=200&minimumLevel=Information";
+
+    /// <summary>Applies a complete filter set so stale rows are not attributed to new criteria.</summary>
+    private async Task ApplyFiltersAsync()
+    {
+        this._query = "api/diagnostics/logs?limit=200&source=" + Uri.EscapeDataString(this._source) +
+            "&minimumLevel=" + Uri.EscapeDataString(this._minimumLevel) + "&search=" + Uri.EscapeDataString(this._search);
+        this._snapshot = null;
+        await this.RefreshAsync();
+    }
+
+    /// <inheritdoc />
+    protected override async Task LoadAsync()
+    {
+        var result = await this.Api.GetAsync<ApplicationLogPage>(this._query, this.Lifetime);
+        this.Error = result.ErrorCode;
+        if (result.IsSuccess)
+        {
+            this._snapshot = result.Value;
+            this._readAtUtc = DateTimeOffset.UtcNow;
+        }
+    }
+}

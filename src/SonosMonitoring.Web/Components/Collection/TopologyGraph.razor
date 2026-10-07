@@ -1,0 +1,101 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JavaScript
+<div class="toolbar">
+    <MudButton OnClick='() => CommandAsync("in")' aria-label="@Text["ZoomIn"]">+</MudButton>
+    <MudButton OnClick='() => CommandAsync("out")' aria-label="@Text["ZoomOut"]">−</MudButton>
+    <MudButton OnClick='() => CommandAsync("fit")'>@Text["ResetView"]</MudButton>
+    <MudButton OnClick='() => CommandAsync("layout")'>@Text["Layout"]</MudButton>
+</div>
+@if (_failed) { <MudAlert Severity="Severity.Warning">@Text["MapUnavailable"]</MudAlert> }
+<div class="group-map topology-graph" tabindex="0" role="region" aria-label="@Text["Topology"]" @ref="_element"></div>
+<p class="muted section-space">@Text["TopologyHelp"]</p>
+<p class="map-legend">@Text["TopologyLegend"]</p>
+<label class="field">@Text["SelectNode"]<select @bind="_selected"><option value="">@Text["SelectDevice"]</option>
+    @foreach (var id in MemberIds) { <option value="@id">@Name(id)</option> }
+</select></label>
+@if (_selected.Length > 0)
+{
+    <section class="panel section-space" aria-live="polite"><h3>@Name(_selected)</h3>
+        @if (Devices.FirstOrDefault(device => device.DeviceId == _selected) is { } selected)
+        {
+            <DeviceLiveSummary Device="selected" Offline="Offline" />
+            @if (Offline == false) { <p><a href="@("/devices/" + Uri.EscapeDataString(selected.DeviceId))">@Text["Details"] →</a></p> }
+        }
+        else { <p>@Text["Unobserved"] · <span class="technical-code">@_selected</span></p> }
+    </section>
+}
+@code {
+    private ElementReference _element;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<TopologyGraph>? _reference;
+    private string _selected = "";
+    private string? _rendered;
+    private bool _failed;
+    private bool _disposed;
+    /// <summary>Gets or sets the observations from exactly one reporter.</summary>
+    [Parameter] public IReadOnlyList<TopologyGroupDto> Groups { get; set; } = [];
+    /// <summary>Gets or sets observed devices used for quality and detail navigation.</summary>
+    [Parameter] public IReadOnlyList<DeviceSnapshotDto> Devices { get; set; } = [];
+    /// <summary>Gets or sets whether live links must be suppressed for imported snapshots.</summary>
+    [Parameter] public bool Offline { get; set; }
+    /// <summary>Gets the reported identities, including unobserved coordinator and parent references.</summary>
+    private IEnumerable<string> MemberIds => this.Groups.SelectMany(group => group.Members.Select(member => member.DeviceId)
+        .Concat(group.Members.Where(member => member.ParentDeviceId is not null).Select(member => member.ParentDeviceId!)).Append(group.CoordinatorDeviceId)).Distinct();
+    /// <summary>Resolves a human label without asserting reachability.</summary>
+    /// <param name="id">Reported identity.</param>
+    private string Name(string id) => this.Devices.FirstOrDefault(device => device.DeviceId == id)?.RoomName ??
+        this.Groups.SelectMany(group => group.Members).FirstOrDefault(member => member.DeviceId == id)?.RoomName ?? id;
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (this.MemberIds.Contains(this._selected) == false) { this._selected = ""; }
+    }
+    /// <summary>Receives an explicit graph selection without allowing arbitrary navigation URLs.</summary>
+    /// <param name="id">Selected reported identity.</param>
+    [JSInvokable]
+    public Task SelectDevice(string id)
+    {
+        if (this.MemberIds.Contains(id)) { this._selected = id; }
+        return this.InvokeAsync(this.StateHasChanged);
+    }
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (this._disposed) { return; }
+        try
+        {
+            this._module ??= await this.JavaScript.InvokeAsync<IJSObjectReference>("import", "./topology.js");
+            this._reference ??= DotNetObjectReference.Create(this);
+            var labels = new { group = this.Text["Group"], coordinator = this.Text["Coordinator"], members = this.Text["Members"],
+                summaries = this.Devices.ToDictionary(device => device.DeviceId, device => DevicePresentation.Lines(device, this.Text, includeAge: false)) };
+            string signature = System.Text.Json.JsonSerializer.Serialize(new { this.Groups, this.Devices, labels });
+            if (signature != this._rendered)
+            {
+                await this._module.InvokeVoidAsync("update", this._element, this.Groups, this.Devices, labels, this._reference);
+                this._rendered = signature;
+            }
+        }
+        catch (JSException)
+        {
+            if (this._failed == false) { this._failed = true; this.StateHasChanged(); }
+        }
+    }
+    /// <summary>Applies one viewport action without changing reported topology.</summary>
+    /// <param name="action">Fixed zoom, fit or layout operation.</param>
+    private async Task CommandAsync(string action)
+    {
+        if (this._module is not null) { await this._module.InvokeVoidAsync("command", this._element, action); }
+    }
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        this._disposed = true;
+        this._reference?.Dispose();
+        if (this._module is not null)
+        {
+            try { await this._module.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+        }
+        // The browser's removal observer owns canvas cleanup after Blazor removes the element.
+    }
+}

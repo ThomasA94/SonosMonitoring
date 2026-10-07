@@ -1,0 +1,41 @@
+@page "/groups"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+@using SonosMonitoring.Web.Components.Collection
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Topology"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["Topology"]" Description="@Text["GroupsDescription"]"><MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<p class="muted">@Text["LivePolling"]</p>
+<p><a class="media-button" href="/media">@Text["MediaManageGroups"] →</a></p>
+@if (Snapshot is not null)
+{
+    <label class="field panel">@Text["Reporter"]<select @bind="_selected"><option value="">@Text["SelectDevice"]</option>@foreach (var device in Snapshot.Devices) { <option value="@device.DeviceId">@(device.RoomName ?? device.DeviceId) · @device.Address</option> }</select></label>
+    @if (ReporterDevice is { } reporter)
+    {
+        <details class="topology-source"><summary>@Text["TopologySource"] <SourceBadge Source="reporter.TopologyStatus" /></summary>
+            <SourceCard Title="@Text["TopologySource"]" Source="reporter.TopologyStatus" />
+        </details>
+        <details class="panel reporter-summary"><summary>@Text["Reporter"]: @(reporter.RoomName ?? reporter.DeviceId) &middot; @Text["Details"]</summary><DeviceLiveSummary Device="reporter" /></details>
+        <GroupView @key="reporter.DeviceId" Groups="reporter.Groups" Devices="Snapshot.Devices" />
+    }
+    else { <EmptyState Title="@Text["NoGroups"]" Description="@Text["NoGroupsHint"]" /> }
+}
+@code {
+    private string _selected = "";
+    /// <summary>Gets or sets the optional device-detail deep link.</summary>
+    [SupplyParameterFromQuery(Name = "reporter")] public string? Reporter { get; set; }
+    /// <summary>Gets the single selected reporter, preserving conflicting observations independently.</summary>
+    private DeviceSnapshotDto? ReporterDevice => this.Snapshot?.Devices.FirstOrDefault(device => device.DeviceId == this._selected);
+    /// <inheritdoc />
+    protected override void OnParametersSet() => this._selected = this.Reporter ?? this._selected;
+    /// <inheritdoc />
+    protected override async Task LoadAsync()
+    {
+        await base.LoadAsync();
+        if (this._selected.Length == 0)
+        {
+            this._selected = this.Snapshot?.Devices.FirstOrDefault()?.DeviceId ?? "";
+        }
+    }
+}

@@ -1,0 +1,166 @@
+@page "/media"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+@using SonosMonitoring.Contracts.MediaControl
+@using SonosMonitoring.Web.Components.MediaControl
+@using SonosMonitoring.Web.MediaControl
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["MediaControl"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["MediaControl"]" Description="@Text["MediaDescription"]"><MudButton OnClick="RefreshAllAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<section class="panel media-settings" aria-label="@Text["MediaSettings"]">
+    <h2>@Text["MediaSettings"]</h2>
+    @if (_status is not null)
+    {
+        <p>@Text[_status.Enabled ? "MediaEnabled" : "MediaDisabled"]</p>
+        <p class="muted">@Text["MediaGrantGeneration"]: <code>@_status.Generation</code></p>
+        @if (_gatePending is not null)
+        {
+            <div class="media-warning" role="alert"><p>@Text["MediaGateAmbiguous"]</p><button class="media-button" disabled="@_gateBusy" @onclick="SubmitGateAsync">@Text["MediaRetrySame"]</button></div>
+        }
+        else
+        {
+            <div class="media-actions"><button class="media-button" disabled="@(_gateBusy || _status.Enabled)" @onclick="() => ChangeGateAsync(true)">@Text["MediaEnable"]</button>
+                <button class="media-button media-danger" disabled="@(_gateBusy || _status.Enabled == false)" @onclick="() => ChangeGateAsync(false)">@Text["MediaDisable"]</button></div>
+        }
+        @if (_status.Blocks.Count > 0)
+        {
+            <div class="media-warning"><h3>@Text["MediaBlocked"]</h3><p>@Text["MediaRiskWarning"]</p>
+                <ul>@foreach (var block in _status.Blocks) { <li><code>@block.OperationId</code> · @Text["MediaOperation_" + block.Status] · @Text["MediaAction_" + block.Action] · @Text["MediaOriginalValue"]: @(block.Value?.ToString(CultureInfo.CurrentCulture) ?? Text["Unknown"]) · @string.Join(", ", block.DeviceKeys)</li> }</ul>
+                @if (RiskableBlocks.Count == 0) { <p>@Text["MediaDispatchCannotRecall"]</p> }
+                else if (_riskPending is null)
+                {
+                    <label class="media-check"><input type="checkbox" @bind="_riskAcknowledged" /> @Text["MediaRiskAcknowledge"]</label>
+                    <button class="media-button media-danger" disabled="@(_gateBusy || _riskAcknowledged == false)" @onclick="AcceptRiskAsync">@Text["MediaAcceptRisk"]</button>
+                }
+                else
+                {
+                    <p>@Text["MediaGateAmbiguous"]</p><button class="media-button" disabled="@_gateBusy" @onclick="SubmitRiskAsync">@Text["MediaRetrySame"]</button>
+                }
+            </div>
+        }
+    }
+    else { <p>@Text["MediaGateUnavailable"]</p> }
+    @if (_gateError is not null) { <p role="alert" class="media-error">@Text.Error(_gateError) <code>@_gateError</code></p> }
+</section>
+@if (Snapshot is not null)
+{
+    <label class="field panel media-picker">@Text["MediaPlaybackDestination"]
+        <select @bind="_selected" disabled="@_interactionLocked"><option value="">@Text["SelectDevice"]</option>@foreach (var device in PlaybackTargets.Rooms(Snapshot.Devices)) { <option value="@device.DeviceId">@TargetLabel(device)</option> }</select>
+        <span class="muted">@Text["MediaDestinationHelp"]</span>
+    </label>
+    @if (Snapshot.Devices.Any(device => device.DeviceId == _selected))
+    {
+        <MediaPanel DeviceKey="@_selected" Devices="@Snapshot.Devices" InteractionLockedChanged="value => _interactionLocked = value" @key="_selected" />
+    }
+    else { <EmptyState Title="@Text["NoResults"]" Description="@Text["UnknownDevice"]" /> }
+}
+
+@code {
+    private MediaControlStatusDto? _status;
+    private string _selected = "";
+    private string? _gateError;
+    private (string Path, object Body, Guid Key)? _gatePending;
+    private (AcceptMediaRiskRequest Body, Guid Key)? _riskPending;
+    private bool _gateBusy;
+    private bool _riskAcknowledged;
+    private bool _interactionLocked;
+
+    /// <summary>Names a room and the playback group reported by that room, without merging reporters.</summary>
+    /// <param name="device">Observed selectable room.</param>
+    private string TargetLabel(DeviceSnapshotDto device)
+    {
+        var group = PlaybackTargets.OwnGroup(device);
+        string name = device.RoomName ?? device.DeviceId;
+        return group is { Members.Count: > 1 } ? name + " · " + this.Text["Group"] + ": " +
+            string.Join(", ", group.Members.Where(member => member.IsInvisible != true && member.ParentDeviceId is null)
+                .Select(member => member.RoomName ?? member.DeviceId)) : name;
+    }
+
+    /// <summary>Only uncertain outcomes can be released by operator risk acknowledgement.</summary>
+    private IReadOnlyList<MediaBlockDto> RiskableBlocks => this._status?.Blocks.Where(block => block.Status == "outcome_unknown").ToArray() ?? [];
+
+    /// <summary>Gets the optional live player deep link.</summary>
+    [SupplyParameterFromQuery(Name = "device")] public string? Device { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet() => this._selected = this.Device ?? this._selected;
+
+    /// <inheritdoc />
+    protected override async Task LoadAsync()
+    {
+        await base.LoadAsync();
+        await this.LoadGateAsync();
+        if (this._selected.Length == 0)
+        {
+            var rooms = PlaybackTargets.Rooms(this.Snapshot?.Devices ?? []).ToArray();
+            this._selected = (rooms.FirstOrDefault(device => PlaybackTargets.OwnGroup(device)?.CoordinatorDeviceId == device.DeviceId) ??
+                rooms.FirstOrDefault())?.DeviceId ?? "";
+        }
+    }
+
+    /// <summary>Reads the authoritative control gate and persistent blocks.</summary>
+    private async Task LoadGateAsync()
+    {
+        var result = await this.Api.GetAsync<MediaControlStatusDto>("api/media/control", this.Lifetime);
+        this._gateError = result.ErrorCode;
+        if (result.IsSuccess) { this._status = result.Value; }
+    }
+
+    /// <summary>Refreshes collection and gate only on explicit request.</summary>
+    private Task RefreshAllAsync() => this.RefreshAsync();
+
+    /// <summary>Starts one gate generation transition with a stable request key.</summary>
+    private async Task ChangeGateAsync(bool enable)
+    {
+        if (this._status is null || this._gateBusy || this._gatePending is not null) { return; }
+        this._gatePending = (enable ? "api/media/control/enable" : "api/media/control/disable", new { }, Guid.NewGuid());
+        await this.SubmitGateAsync();
+    }
+
+    /// <summary>Retries only the original gate request if transport outcome was ambiguous.</summary>
+    private async Task SubmitGateAsync()
+    {
+        if (this._gateBusy || this._gatePending is null) { return; }
+        this._gateBusy = true;
+        try
+        {
+            var action = this._gatePending.Value;
+            var result = await this.Api.PostAsync<MediaControlStatusDto>(action.Path, action.Body, action.Key, this.Lifetime);
+            this._gateError = result.ErrorCode;
+            if (result.IsSuccess)
+            {
+                this._status = result.Value;
+                this._gatePending = null;
+            }
+            else if (result.StatusCode is >= 400 and < 500) { this._gatePending = null; }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._gateBusy = false; }
+    }
+
+    /// <summary>Submits exact blocked operation IDs after an explicit delayed-effect acknowledgement.</summary>
+    private async Task AcceptRiskAsync()
+    {
+        if (this.RiskableBlocks.Count == 0 || this._riskAcknowledged == false || this._gateBusy || this._riskPending is not null) { return; }
+        this._riskPending = (new AcceptMediaRiskRequest(this.RiskableBlocks.Select(block => block.OperationId).ToArray(), true), Guid.NewGuid());
+        await this.SubmitRiskAsync();
+    }
+
+    /// <summary>Repeats only the originally acknowledged risk release after an ambiguous response.</summary>
+    private async Task SubmitRiskAsync()
+    {
+        if (this._riskPending is null || this._gateBusy) { return; }
+        this._gateBusy = true;
+        try
+        {
+            var request = this._riskPending.Value;
+            var result = await this.Api.PostAsync<MediaControlStatusDto>("api/media/control/accept-risk", request.Body, request.Key, this.Lifetime);
+            this._gateError = result.ErrorCode;
+            if (result.IsSuccess) { this._status = result.Value; this._riskAcknowledged = false; this._riskPending = null; }
+            else if (result.StatusCode is >= 400 and < 500) { this._riskPending = null; }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._gateBusy = false; }
+    }
+}

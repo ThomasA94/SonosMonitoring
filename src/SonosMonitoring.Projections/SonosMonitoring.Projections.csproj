@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">     <ItemGroup>
+        <ProjectReference Include="../SonosMonitoring.Platform/SonosMonitoring.Platform.csproj" />
+        <ProjectReference Include="../SonosMonitoring.Observability/SonosMonitoring.Observability.csproj" />
+        <PackageReference Include="Devbone.Frameworks.EventProjection" />
+        <PackageReference Include="Devbone.Frameworks.EventProjection.RabbitMq" />
+    </ItemGroup>
+</Project>

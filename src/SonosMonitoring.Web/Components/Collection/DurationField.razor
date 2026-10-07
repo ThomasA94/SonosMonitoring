@@ -1,0 +1,25 @@
+<label class="field">@Label
+    <input type="number" min="@Minimum" max="@Maximum" step="1" required value="@Value.TotalSeconds.ToString(CultureInfo.InvariantCulture)" @onchange="ChangeAsync" />
+</label>
+@code {
+    /// <summary>Gets or sets the localized label including the seconds unit.</summary>
+    [Parameter] public string Label { get; set; } = "";
+    /// <summary>Gets or sets the represented interval.</summary>
+    [Parameter] public TimeSpan Value { get; set; }
+    /// <summary>Gets or sets the callback for edited intervals.</summary>
+    [Parameter] public EventCallback<TimeSpan> ValueChanged { get; set; }
+    /// <summary>Gets or sets the lower input bound in seconds.</summary>
+    [Parameter] public int Minimum { get; set; } = 1;
+    /// <summary>Gets or sets the upper input bound in seconds.</summary>
+    [Parameter] public int Maximum { get; set; } = 604800;
+    /// <summary>Converts a browser number into the transport interval.</summary>
+    /// <param name="args">Changed HTML input value.</param>
+    private async Task ChangeAsync(ChangeEventArgs args)
+    {
+        if (double.TryParse(args.Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double seconds) &&
+            double.IsFinite(seconds) && seconds >= this.Minimum && seconds <= this.Maximum)
+        {
+            await this.ValueChanged.InvokeAsync(TimeSpan.FromSeconds(seconds));
+        }
+    }
+}

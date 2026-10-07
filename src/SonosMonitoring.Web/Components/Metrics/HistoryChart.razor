@@ -1,0 +1,35 @@
+@using SonosMonitoring.Contracts.Metrics
+@using SonosMonitoring.Web.Metrics
+<section class="panel chart-panel">
+    <div class="section-heading"><h2>@Text["MetricName_" + Response.Metric]</h2><span>@Response.Unit</span></div>
+    <p class="muted">@Text.Time(Response.Start) — @Text.Time(Response.End) · @Text["Resolution"]: @Response.StepSeconds @Text["Seconds"]</p>
+    <svg class="metric-chart" viewBox="0 0 920 240" role="img" aria-label="@(Text["MetricName_" + Response.Metric] + ", " + Response.Unit)">
+        <line x1="52" y1="30" x2="880" y2="30" class="chart-grid" /><line x1="52" y1="115" x2="880" y2="115" class="chart-grid" /><line x1="52" y1="200" x2="880" y2="200" class="chart-grid" />
+        <text x="0" y="34">@Text.Number(Maximum)</text><text x="0" y="119">@Text.Number(Maximum / 2)</text><text x="20" y="204">0</text>
+        @for (int index = 0; index < Series.Count; index++)
+        {
+            <path d="@MetricMatrix.Path(Series[index], Response, Maximum)" fill="none" stroke="@Colors[index % Colors.Length]" stroke-width="2.5" />
+        }
+        <text x="52" y="228">@Text.Time(Response.Start)</text><text x="880" y="228" text-anchor="end">@Text.Time(Response.End)</text>
+    </svg>
+    <div class="chart-legend">@for (int index = 0; index < Series.Count; index++) { <span><i style="@("background:" + Colors[index % Colors.Length])"></i>@Series[index].Label</span> }</div>
+    <p class="muted">@Text["MetricHint"]</p>
+    <details><summary>@Text["Values"] (@Rows.Count)</summary><div class="table-scroll" tabindex="0" aria-label="@Text["Values"]"><table><thead><tr><th>@Text["Time"]</th><th>@Text["Interface"] / @Text["DescriptionSource"]</th><th>@Text["Value"] (@Response.Unit)</th></tr></thead><tbody>
+        @foreach (var row in Rows.Skip(_page * 100).Take(100)) { <tr><td>@Text.Time(row.Point.Time)</td><td>@row.Label</td><td>@(row.Point.Value is { } value ? Text.Number(value) : Text["Missing"])</td></tr> }
+    </tbody></table></div><div class="toolbar"><MudButton OnClick="() => _page--" Disabled="@(_page == 0)" aria-label="@Text["Before"]">←</MudButton><span>@(_page + 1) / @Math.Max(1, (int)Math.Ceiling(Rows.Count / 100d))</span><MudButton OnClick="() => _page++" Disabled="@((_page + 1) * 100 >= Rows.Count)" aria-label="@Text["After"]">→</MudButton></div></details>
+</section>
+@code {
+    private int _page;
+    /// <summary>Gets chart colors with corresponding text labels.</summary>
+    private static string[] Colors { get; } = ["#285d4d", "#28749b", "#a25c22", "#7953a3", "#b44863"];
+    /// <summary>Gets or sets the original bounds and units.</summary>
+    [Parameter, EditorRequired] public MetricHistoryResponse Response { get; set; } = null!;
+    /// <summary>Gets or sets decoded series.</summary>
+    [Parameter] public IReadOnlyList<MetricSeries> Series { get; set; } = [];
+    /// <summary>Gets a common scale across all returned series.</summary>
+    private double Maximum => Math.Max(1, this.Series.SelectMany(series => series.Points).Select(point => point.Value ?? 0).DefaultIfEmpty().Max());
+    /// <summary>Gets exact returned points for the accessible paged table.</summary>
+    private IReadOnlyList<(string Label, MetricPoint Point)> Rows => this.Series.SelectMany(series => series.Points.Select(point => (series.Label, point))).OrderBy(row => row.point.Time).ToArray();
+    /// <inheritdoc />
+    protected override void OnParametersSet() => this._page = 0;
+}

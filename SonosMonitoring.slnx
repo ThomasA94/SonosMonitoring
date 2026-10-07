@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SonosMonitoring.Observability/SonosMonitoring.Observability.csproj" />
+    <Project Path="src/SonosMonitoring.Web/SonosMonitoring.Web.csproj" />
+    <Project Path="src/SonosMonitoring.Api/SonosMonitoring.Api.csproj" />
+    <Project Path="src/SonosMonitoring.Application/SonosMonitoring.Application.csproj" />
+    <Project Path="src/SonosMonitoring.Contracts/SonosMonitoring.Contracts.csproj" />
+    <Project Path="src/SonosMonitoring.Domain/SonosMonitoring.Domain.csproj" />
+    <Project Path="src/SonosMonitoring.Infrastructure/SonosMonitoring.Infrastructure.csproj" />
+    <Project Path="src/SonosMonitoring.Platform/SonosMonitoring.Platform.csproj" />
+    <Project Path="src/SonosMonitoring.Projections/SonosMonitoring.Projections.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SonosMonitoring.Web.Tests/SonosMonitoring.Web.Tests.csproj" />
+    <Project Path="tests/SonosMonitoring.E2E.Tests/SonosMonitoring.E2E.Tests.csproj" />
+    <Project Path="tests/SonosMonitoring.Integration.Tests/SonosMonitoring.Integration.Tests.csproj" />
+    <Project Path="tests/SonosMonitoring.Unit.Tests/SonosMonitoring.Unit.Tests.csproj" />
+  </Folder>
+</Solution>

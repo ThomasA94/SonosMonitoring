@@ -1,0 +1,28 @@
+<div class="details-grid">
+    <section class="panel"><h2>@(Device.RoomName ?? Device.DeviceId)</h2><dl><dt>@Text["Model"]</dt><dd>@(Device.ModelName ?? Text["Unknown"])</dd><dt>@Text["Address"]</dt><dd>@Device.Address</dd><dt>@Text["Identity"]</dt><dd class="technical-code">@Device.DeviceId</dd><dt>@Text["FirstSeen"]</dt><dd>@Text.Time(Device.FirstSeenUtc)</dd><dt>@Text["LastSeen"]</dt><dd>@Text.Time(Device.LastSeenUtc)</dd></dl></section>
+    <SourceCard Title="@Text["DescriptionSource"]" Source="Device.Description" />
+    <SourceCard Title="@Text["InterfaceSource"]" Source="Device.InterfaceStatus" />
+    <SourceCard Title="@Text["TopologySource"]" Source="Device.TopologyStatus" />
+</div>
+<section class="panel"><DeviceLiveSummary Device="Device" Offline="Offline" /></section>
+<section class="panel"><h2>@Text["RawCounters"]</h2><p class="muted">@Text["RawCountersHint"]</p>
+    @if (Device.Interfaces.Count == 0) { <p>@Text["NoCounters"]</p> }
+    @foreach (var entry in Device.Interfaces)
+    {
+        <h3>@entry.Interface</h3><div class="table-scroll" tabindex="0" aria-label="@Text["RawCounters"]"><table><thead><tr><th>@Text["Metric"]</th><th>@Text["Receive"]</th><th>@Text["Transmit"]</th></tr></thead><tbody>
+            <tr><th>@Text["Bytes"]</th><td>@entry.ReceiveBytes.ToString("N0")</td><td>@entry.TransmitBytes.ToString("N0")</td></tr>
+            <tr><th>@Text["Packets"]</th><td>@entry.ReceivePackets.ToString("N0")</td><td>@entry.TransmitPackets.ToString("N0")</td></tr>
+            <tr><th>@Text["Errors"]</th><td>@entry.ReceiveErrors.ToString("N0")</td><td>@entry.TransmitErrors.ToString("N0")</td></tr>
+            <tr><th>@Text["Dropped"]</th><td>@entry.ReceiveDropped.ToString("N0")</td><td>@entry.TransmitDropped.ToString("N0")</td></tr>
+        </tbody></table></div>
+    }
+</section>
+<section class="panel"><h2>@Text["EventPath"]</h2><p class="muted">@Text["PollingHint"]</p><dl><dt>@Text["Enabled"]</dt><dd>@Text[Device.Gena.Enabled ? "Yes" : "No"]</dd><dt>@Text["Subscribed"]</dt><dd>@Text[Device.Gena.Subscribed ? "Yes" : "No"]</dd><dt>@Text["InitialReceived"]</dt><dd>@Text[Device.Gena.InitialNotificationReceived ? "Yes" : "No"]</dd><dt>@Text["LastNotification"]</dt><dd>@Text.Time(Device.Gena.LastNotificationUtc)</dd><dt>@Text["Expires"]</dt><dd>@Text.Time(Device.Gena.ExpiresUtc)</dd></dl>
+    @if (Device.Gena.ErrorCode is not null) { <p class="technical-code">@Device.Gena.ErrorCode</p> }
+</section>
+@code {
+    /// <summary>Gets or sets live or offline device observations without allowing mutations.</summary>
+    [Parameter, EditorRequired] public DeviceSnapshotDto Device { get; set; } = null!;
+    /// <summary>Gets or sets whether the view belongs to an imported snapshot.</summary>
+    [Parameter] public bool Offline { get; set; }
+}

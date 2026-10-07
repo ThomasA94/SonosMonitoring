@@ -1,0 +1,5 @@
+# Keep the existing metrics project and volumes while reaching the application by service name.
+networks:
+  default:
+    external: true
+    name: sonosmonitoring-dev_default

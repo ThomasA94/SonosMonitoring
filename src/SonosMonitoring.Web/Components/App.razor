@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base href="/" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="app.css" rel="stylesheet" />
+    <HeadOutlet @rendermode="@(IsInteractive ? new InteractiveServerRenderMode(prerender: false) : null)" />
+</head>
+<body>
+    <Routes />
+    <div id="components-reconnect-modal" role="alert" aria-live="assertive">
+        <strong>@Text["Disconnected"]</strong>
+        <p>@Text["ReconnectHint"]</p>
+        <a href="/">@Text["Reload"]</a>
+    </div>
+    <div id="blazor-error-ui" role="alert">@Text["UnexpectedError"] <a href="/">@Text["Reload"]</a></div>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="vendor/cytoscape/cytoscape.min.js"></script>
+    <script src="app.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>
+
+@code {
+    /// <summary>Gets or sets the initial endpoint request for selecting static public pages.</summary>
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+    /// <summary>Gets whether the page needs an authenticated interactive document head.</summary>
+    private bool IsInteractive => this.HttpContext?.Request.Path.Value is not ("/login" or "/error" or "/not-found");
+}

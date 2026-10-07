@@ -1,0 +1,457 @@
+@using SonosMonitoring.Contracts.MediaControl
+@using SonosMonitoring.Web.MediaControl
+@implements IAsyncDisposable
+@inject MonitoringApiClient Api
+
+<section class="panel media-panel" aria-label="@Text["MediaControl"]">
+    <div class="media-heading"><h2>@Text["MediaControl"]</h2><button class="media-button" @onclick="RefreshAsync" disabled="@_busy">@Text["Refresh"]</button></div>
+    @if (_busy) { <p role="status">@Text["Loading"]</p> }
+    @if (_error is not null) { <p class="media-error" role="alert">@Text.Error(_error) <code>@_error</code></p> }
+    @if (_status is null || _status.Enabled == false)
+    {
+        <p class="media-notice">@Text["MediaDisabled"] <a href="/media">@Text["MediaSettingsLink"]</a></p>
+    }
+    @if (Blocked.Count > 0)
+    {
+        <div class="media-warning" role="alert"><strong>@Text["MediaBlocked"]</strong><p>@Text["MediaBlockedHint"]</p>
+            <ul>@foreach (var block in Blocked) { <li><code>@block.OperationId</code> · @Text["MediaOperation_" + block.Status] · @ActionLabel(block.Action) · @Text["MediaOriginalValue"]: @(block.Value?.ToString(CultureInfo.CurrentCulture) ?? Text["Unknown"]) · @string.Join(", ", block.DeviceKeys.Select(Name))</li> }</ul>
+            <a href="/media">@Text["MediaRiskLink"]</a>
+        </div>
+    }
+    @if (_playback is { } playback)
+    {
+        <div class="media-current" aria-live="polite">
+            <div><span class="eyebrow">@Text["MediaNowPlaying"]</span><h3>@(playback.Title ?? Text["Unknown"])</h3>
+                <p>@(playback.Artist ?? Text["Unknown"]) · @(playback.Album ?? Text["Unknown"])</p></div>
+            <dl><div><dt>@Text["MediaSource"]</dt><dd>@Text.Observation(playback.Source)</dd></div>
+                <div><dt>@Text["MediaState"]</dt><dd>@Text.Observation(playback.TransportState)</dd></div>
+                <div><dt>@Text["MediaObserved"]</dt><dd>@Text.Time(playback.ObservedAtUtc)</dd></div>
+                <div><dt>@Text["MediaPosition"]</dt><dd>@PositionText(playback.PositionSeconds) / @PositionText(playback.DurationSeconds)</dd></div></dl>
+        </div>
+        <p class="media-target"><strong>@Text["MediaGroupTarget"]:</strong> @string.Join(", ", playback.Context.MemberDeviceKeys.Select(Name)) <span class="muted">(@Text["Coordinator"]: @Name(playback.Context.CoordinatorDeviceKey))</span></p>
+        <GroupMembershipEditor Context="playback.Context" Devices="Devices" Disabled="ControlsDisabled"
+                               Add="AddRoomAsync" Remove="RemoveRoomAsync" />
+        @if (_confirm is not null)
+        {
+            <div class="media-warning" role="group" aria-label="@Text["MediaConfirmAction"]"><h3>@Text["MediaConfirmAction"]</h3><p>@ActionLabel(_confirm.Action) · @Text["MediaSourceChangeWarning"]</p>
+                <p>@Text["MediaSelectedRoom"]: <strong>@Name(_confirm.DeviceKey)</strong></p>
+                <p>@Text["MediaGroupTarget"]: @string.Join(", ", _confirm.Request.Context.MemberDeviceKeys.Select(Name))</p>
+                @if (_confirm.Request.DestinationContext is { } destination)
+                {
+                    <p>@Text["MediaJoinDestination"]: <strong>@string.Join(", ", destination.MemberDeviceKeys.Select(Name))</strong></p>
+                }
+                <button class="media-button media-danger" disabled="@_busy" @onclick='SendConfirmedAsync'>@Text["Confirm"]</button><button class="media-button" disabled="@_busy" @onclick='() => _confirm = null'>@Text["Cancel"]</button></div>
+        }
+        @if (_pending is not null)
+        {
+            <div class="media-warning" role="alert"><p>@Text["MediaAmbiguousSend"]</p><p>@Text["MediaOriginalAction"]: @ActionLabel(_pending.Action) · <code>@_pending.OperationId</code></p>
+                <p>@Text["MediaSelectedRoom"]: @Name(_pending.DeviceKey)</p>
+                <button class="media-button" @onclick="RetryAsync" disabled="@_busy">@Text["MediaRetrySame"]</button>
+                <button class="media-button" @onclick="CheckPendingAsync" disabled="@_busy">@Text["MediaCheckOperation"]</button></div>
+        }
+        @if (_operation is not null)
+        {
+            <div class="media-operation" role="status"><strong>@Text["MediaOperation"]: @ActionLabel(_operation.Action)</strong>
+                <p>@Text["MediaSelectedRoom"]: @Name(_operation.DeviceKey)</p>
+                <p>@Text["MediaOperation_" + _operation.Status] · <code>@_operation.OperationId</code></p>
+                @if (_operation.Code is not null) { <p><code>@_operation.Code</code></p> }
+                @if (_operation.Step >= 0) { <p>@Text["MediaLastReleasedStep"] @(_operation.Step + 1). @Text["MediaReleasedStepWarning"]</p> }
+                @if (_operation.Code == "media.partial.revoked") { <p class="media-error">@Text["MediaPartialRevoked"]</p> }
+                <p>@Text["MediaStateDistinction"]</p>
+                @if (_operationPolls >= 12 && IsTerminal(_operation) == false) { <p>@Text["MediaPollingStopped"]</p> }
+                <button class="media-button" @onclick="CheckOperationAsync" disabled="@_busy">@Text["MediaCheckOperation"]</button></div>
+        }
+        <fieldset class="media-controls" disabled="@ControlsDisabled">
+            <legend>@Text["MediaGroupPlayback"]</legend>
+            <div class="media-actions">
+                @foreach (var action in new[] { "resume", "pause", "stop", "previous", "next" })
+                {
+                    <button class="media-button" title='@(Available(action) ? "" : Text["MediaUnsupported"])' disabled='@(Available(action) == false)' @onclick='() => SendAsync(action)'>@ActionLabel(action)</button>
+                }
+            </div>
+        </fieldset>
+        <div class="media-control-grid">
+            <fieldset class="media-controls" disabled="@ControlsDisabled"><legend>@Text["MediaPlayerVolume"]: @Name(playback.Context.DeviceKey)</legend>
+                <p>@Text["MediaReported"]: @(playback.Volume?.ToString(CultureInfo.CurrentCulture) ?? Text["Unknown"])</p>
+                <label>@Text["MediaSetVolume"] <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" disabled='@(Available("volume") == false)' /></label>
+                <div class="media-actions"><output>@_volume</output><button class="media-button" disabled='@(Available("volume") == false)' @onclick='() => SendAsync("volume", value: _volume)'>@Text["MediaApplyVolume"]</button>
+                    <button class="media-button" disabled='@(Available(playback.Muted == true ? "unmute" : "mute") == false)' @onclick='() => SendAsync(playback.Muted == true ? "unmute" : "mute")'>@Text[playback.Muted == true ? "MediaUnmute" : "MediaMute"]</button></div>
+            </fieldset>
+            <fieldset class="media-controls" disabled="@ControlsDisabled"><legend>@Text["MediaGroupVolume"]: @string.Join(", ", playback.Context.MemberDeviceKeys.Select(Name))</legend>
+                <p>@Text["MediaReported"]: @(playback.GroupVolume?.ToString(CultureInfo.CurrentCulture) ?? Text["Unknown"])</p>
+                <label>@Text["MediaSetVolume"] <input type="range" min="0" max="100" @bind="_groupVolume" @bind:event="oninput" disabled='@(Available("group-volume") == false)' /></label>
+                <div class="media-actions"><output>@_groupVolume</output><button class="media-button" disabled='@(Available("group-volume") == false)' @onclick='() => SendAsync("group-volume", value: _groupVolume)'>@Text["MediaApplyVolume"]</button>
+                    <button class="media-button" disabled='@(Available(playback.GroupMuted == true ? "group-unmute" : "group-mute") == false)' @onclick='() => SendAsync(playback.GroupMuted == true ? "group-unmute" : "group-mute")'>@Text[playback.GroupMuted == true ? "MediaUnmute" : "MediaMute"]</button></div>
+            </fieldset>
+        </div>
+        <fieldset class="media-controls" disabled="@ControlsDisabled"><legend>@Text["MediaPlaybackOptions"]</legend>
+            <p>@Text["MediaPlayMode"] · @Text["MediaReported"]: @ModeLabel(playback.PlayMode)</p>
+            <div class="media-control-grid"><label>@Text["MediaSeekSeconds"] <input type="number" min="0" step="1" @bind="_seekSeconds" disabled='@(Available("seek") == false)' /></label>
+                <button class="media-button" disabled='@(Available("seek") == false || _seekSeconds is null)' @onclick='() => SendAsync("seek", positionSeconds: _seekSeconds)'>@Text["MediaSeek"]</button>
+                <label>@Text["MediaPlayMode"] <select @bind="_mode" disabled='@(Available("mode") == false)'><option value="normal">@Text["MediaModeNormal"]</option><option value="repeat-all">@Text["MediaModeRepeat"]</option><option value="repeat-one">@Text["MediaModeRepeatOne"]</option><option value="shuffle">@Text["MediaModeShuffle"]</option><option value="shuffle-repeat">@Text["MediaModeShuffleRepeat"]</option></select></label>
+                <button class="media-button" disabled='@(Available("mode") == false)' @onclick='() => SendAsync("mode", mode: _mode)'>@Text["MediaApplyMode"]</button>
+                <button class="media-button" disabled='@(Available("crossfade") == false)' @onclick='() => SendAsync("crossfade", value: playback.Crossfade == true ? 0 : 1)'>@Text[playback.Crossfade == true ? "MediaCrossfadeOff" : "MediaCrossfadeOn"]</button></div>
+        </fieldset>
+        <details class="media-library" @ontoggle="LoadLibraryAsync"><summary>@Text["MediaLibrary"]</summary>
+            <div class="media-control-grid"><section><h3>@Text["MediaFavorites"]</h3><button class="media-button" @onclick='() => LoadPageAsync(false, 0)'>@Text["Refresh"]</button>
+                @if (_favorites is not null) { <ul class="media-list">@foreach (var item in _favorites.Items) { <li><div><strong>@item.Title</strong><small>@item.Artist · @item.Album</small></div><div class="media-actions"><button class="media-button" disabled='@(ControlsDisabled || Available("start-favorite") == false)' @onclick='() => ConfirmAsync("start-favorite", reference: item.Reference)'>@Text["MediaPlayFavorite"]</button><button class="media-button" disabled='@(ControlsDisabled || Available("start-stream") == false)' @onclick='() => ConfirmAsync("start-stream", reference: item.Reference)'>@Text["MediaStartStream"]</button><button class="media-button" disabled='@(ControlsDisabled || Available("queue-append") == false)' @onclick='() => ConfirmAsync("queue-append", reference: item.Reference)'>@Text["MediaAppend"]</button></div></li> }</ul>
+                    <div class="media-actions"><button class="media-button" disabled="@(_favorites.Offset == 0)" @onclick='() => LoadPageAsync(false, Math.Max(0, _favorites.Offset - 20))'>@Text["Previous"]</button><span>@(_favorites.Offset + 1)–@Math.Min(_favorites.Total, _favorites.Offset + _favorites.Items.Count) / @_favorites.Total</span><button class="media-button" disabled="@(_favorites.Offset + _favorites.Items.Count >= _favorites.Total)" @onclick='() => LoadPageAsync(false, _favorites.Offset + 20)'>@Text["Next"]</button></div> }
+            </section><section><h3>@Text["MediaQueue"]</h3><button class="media-button" @onclick='() => LoadPageAsync(true, 0)'>@Text["Refresh"]</button>
+                @if (_queue is not null) { <ul class="media-list">@foreach (var item in _queue.Items) { <li><div><strong>@item.Index · @item.Title</strong><small>@item.Artist · @item.Album</small></div><div class="media-actions"><button class="media-button" disabled='@(ControlsDisabled || Available("queue-play") == false)' @onclick='() => ConfirmAsync("queue-play", reference: item.Reference)'>@Text["MediaPlay"]</button><button class="media-button" disabled='@(ControlsDisabled || Available("queue-remove") == false)' @onclick='() => ConfirmAsync("queue-remove", index: item.Index)'>@Text["MediaRemove"]</button><button class="media-button" aria-label="@Text["MediaMoveEarlier"]" disabled='@(ControlsDisabled || Available("queue-reorder") == false || item.Index is null or <= 1)' @onclick='() => ConfirmAsync("queue-reorder", index: item.Index, newIndex: item.Index is null ? null : item.Index.Value - 1)'>↑</button></div></li> }</ul>
+                    <div class="media-actions"><button class="media-button" disabled="@(_queue.Offset == 0)" @onclick='() => LoadPageAsync(true, Math.Max(0, _queue.Offset - 20))'>@Text["Previous"]</button><span>@(_queue.Offset + 1)–@Math.Min(_queue.Total, _queue.Offset + _queue.Items.Count) / @_queue.Total</span><button class="media-button" disabled="@(_queue.Offset + _queue.Items.Count >= _queue.Total)" @onclick='() => LoadPageAsync(true, _queue.Offset + 20)'>@Text["Next"]</button></div>
+                    <button class="media-button media-danger" disabled='@(ControlsDisabled || Available("queue-clear") == false)' @onclick='() => ConfirmAsync("queue-clear")'>@Text["MediaClearQueue"]</button> }
+            </section></div>
+        </details>
+
+    }
+    else if (_status is not null) { <p class="media-notice">@Text["MediaUnavailable"]</p> }
+</section>
+
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private Task? _polling;
+    private string? _loadedDevice;
+    private MediaControlStatusDto? _status;
+    private MediaPlaybackDto? _playback;
+    private MediaPageDto? _queue;
+    private MediaPageDto? _favorites;
+    private MediaAction? _pending;
+    private MediaAction? _confirm;
+    private MediaOperationDto? _operation;
+    private string? _error;
+    private string _mode = "normal";
+    private int _volume;
+    private int _groupVolume;
+    private double? _seekSeconds;
+    private bool _busy;
+    private bool _unknownBlockObserved;
+    private bool _targetsInitialized;
+    private int _operationPolls;
+
+    /// <summary>Gets the selected live player identity.</summary>
+    [Parameter, EditorRequired] public string DeviceKey { get; set; } = "";
+
+    /// <summary>Gets observed physical devices for room labels and coordinator choices.</summary>
+    [Parameter] public IReadOnlyList<DeviceSnapshotDto> Devices { get; set; } = [];
+
+    private bool _interactionLocked;
+
+    /// <summary>Notifies the target picker while a reviewed or unsettled operation must remain visible.</summary>
+    [Parameter] public EventCallback<bool> InteractionLockedChanged { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        bool locked = this._busy || this._pending is not null || this._confirm is not null ||
+            (this._operation is not null && IsTerminal(this._operation) == false);
+        if (locked != this._interactionLocked)
+        {
+            this._interactionLocked = locked;
+            await this.InteractionLockedChanged.InvokeAsync(locked);
+        }
+    }
+
+    /// <summary>Gets persistent blocks affecting the selected player or one of its displayed group members.</summary>
+    private IReadOnlyList<MediaBlockDto> Blocked => this._status?.Blocks.Where(block => block.DeviceKeys.Contains(this.DeviceKey) ||
+        (this._playback?.Context.MemberDeviceKeys.Any(key => block.DeviceKeys.Contains(key)) ?? false)).ToArray() ?? [];
+
+    /// <summary>Prevents a second action while a response or device outcome remains unsettled.</summary>
+    private bool ControlsDisabled => this._busy || this._error is not null || this._status?.Enabled != true || this.Blocked.Count > 0 || this._pending is not null ||
+        (this._operation?.Status == "outcome_unknown" && this._unknownBlockObserved == false) ||
+        (this._operation is not null && IsTerminal(this._operation) == false) || this._confirm is not null;
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        if (this._loadedDevice != this.DeviceKey)
+        {
+            this._loadedDevice = this.DeviceKey;
+            this._playback = null;
+            this._operation = null;
+            this._confirm = null;
+            this._queue = null;
+            this._favorites = null;
+            this._pending = null;
+            this._targetsInitialized = false;
+            this._volume = 0;
+            this._groupVolume = 0;
+            this._mode = "normal";
+            await this.RefreshAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync()
+    {
+        this._polling = this.PollAsync();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Refreshes authoritative grant and target observation without changing any unresolved request.</summary>
+    private async Task RefreshAsync()
+    {
+        if (this._busy || this._lifetime.IsCancellationRequested) { return; }
+        this._busy = true;
+        try
+        {
+            var grant = await this.Api.GetAsync<MediaControlStatusDto>("api/media/control", this._lifetime.Token);
+            if (grant.IsSuccess)
+            {
+                this._status = grant.Value;
+                if (this._operation?.Status == "outcome_unknown" && grant.Value!.Blocks.Any(block => block.OperationId == this._operation.OperationId))
+                {
+                    this._unknownBlockObserved = true;
+                }
+            }
+            this._error = grant.ErrorCode;
+            if (grant.IsSuccess)
+            {
+                var state = await this.Api.GetAsync<MediaPlaybackDto>("api/media/players/" + Uri.EscapeDataString(this.DeviceKey) + "/state", this._lifetime.Token);
+                this._error = state.ErrorCode;
+                if (state.IsSuccess)
+                {
+                    this._playback = state.Value;
+                    if (this._targetsInitialized == false)
+                    {
+                        this._volume = state.Value!.Volume ?? 0;
+                        this._groupVolume = state.Value.GroupVolume ?? 0;
+                        this._mode = state.Value.PlayMode ?? "normal";
+                        this._targetsInitialized = true;
+                    }
+                }
+            }
+            if (this._operation is not null && IsTerminal(this._operation) == false && this._operationPolls < 12)
+            {
+                this._operationPolls++;
+                await this.ReadOperationAsync();
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Checks a changing visible panel every five seconds without overlapping requests.</summary>
+    private async Task PollAsync()
+    {
+        try
+        {
+            using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
+            while (await timer.WaitForNextTickAsync(this._lifetime.Token))
+            {
+                await this.InvokeAsync(async () => { await this.RefreshAsync(); this.StateHasChanged(); });
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    /// <summary>Reports a stable room label without treating an unobserved topology reference as a player.</summary>
+    private string Name(string key) => this.Devices.FirstOrDefault(device => device.DeviceId == key)?.RoomName ?? key;
+
+    /// <summary>Labels observed playback modes independently of the operator's pending selection.</summary>
+    private string ModeLabel(string? mode) => mode switch
+    {
+        "normal" => this.Text["MediaModeNormal"],
+        "repeat-all" => this.Text["MediaModeRepeat"],
+        "repeat-one" => this.Text["MediaModeRepeatOne"],
+        "shuffle" => this.Text["MediaModeShuffle"],
+        "shuffle-repeat" => this.Text["MediaModeShuffleRepeat"],
+        null => this.Text["Unknown"],
+        _ => mode,
+    };
+
+    /// <summary>Formats only known finite media time.</summary>
+    private string PositionText(double? seconds) => seconds is null || double.IsFinite(seconds.Value) == false ? this.Text["Unknown"] :
+        TimeSpan.FromSeconds(seconds.Value).ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+
+    /// <summary>Uses the API's capabilities as the sole action availability source.</summary>
+    private bool Available(string action) => this._playback?.AvailableActions.Contains(action, StringComparer.Ordinal) == true;
+
+    /// <summary>Resolves one central resource for a named action.</summary>
+    private string ActionLabel(string action) => this.Text["MediaAction_" + action];
+
+    /// <summary>Captures the displayed immutable context and selected parameters before sending.</summary>
+    private MediaAction MakeAction(string action, int? value = null, double? positionSeconds = null, string? reference = null, int? index = null, int? newIndex = null, string? mode = null)
+    {
+        var context = this._playback!.Context;
+        if (action.StartsWith("queue-", StringComparison.Ordinal) && this._queue is not null)
+        {
+            context = context with { QueueRevision = this._queue.Revision };
+        }
+        return new(this.DeviceKey, action, new(context, value, positionSeconds, reference, index, newIndex, mode));
+    }
+
+    /// <summary>Sends a simple action only when the currently displayed capability allows it.</summary>
+    private async Task SendAsync(string action, int? value = null, double? positionSeconds = null, string? reference = null, int? index = null, int? newIndex = null, string? mode = null)
+    {
+        if (this.ControlsDisabled || this.Available(action) == false || this._playback is null) { return; }
+        this._unknownBlockObserved = false;
+        this._pending = this.MakeAction(action, value, positionSeconds, reference, index, newIndex, mode);
+        await this.SubmitAsync();
+    }
+
+    /// <summary>Requires review before changing source, queue or group membership.</summary>
+    private Task ConfirmAsync(string action, string? reference = null, int? index = null, int? newIndex = null)
+    {
+        if (this.ControlsDisabled == false && this.Available(action) && this._playback is not null)
+        {
+            this._confirm = this.MakeAction(action, reference: reference, index: index, newIndex: newIndex);
+        }
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Prepares one standalone room to join the displayed playback group.</summary>
+    /// <param name="deviceKey">Candidate room identity.</param>
+    private Task AddRoomAsync(string deviceKey) => this.PrepareMembershipAsync(deviceKey, true);
+
+    /// <summary>Prepares one member to leave the displayed playback group.</summary>
+    /// <param name="deviceKey">Member identity.</param>
+    private Task RemoveRoomAsync(string deviceKey) => this.PrepareMembershipAsync(deviceKey, false);
+
+    /// <summary>Reads the actual action target before review, retaining the displayed group's preconditions.</summary>
+    /// <param name="deviceKey">Room to add or remove.</param>
+    /// <param name="join">Whether the room should join instead of leave.</param>
+    private async Task PrepareMembershipAsync(string deviceKey, bool join)
+    {
+        if (this.ControlsDisabled || this._playback is null) { return; }
+        var displayed = this._playback.Context;
+        this._busy = true;
+        try
+        {
+            var result = await this.Api.GetAsync<MediaPlaybackDto>("api/media/players/" + Uri.EscapeDataString(deviceKey) + "/state", this._lifetime.Token);
+            this._error = result.ErrorCode;
+            if (result.IsSuccess == false) { return; }
+            var source = result.Value!;
+            string action = join ? "join" : "leave";
+            if (source.Context.DeviceKey != deviceKey || source.AvailableActions.Contains(action) == false)
+            {
+                this._error = "media.action_unavailable";
+                return;
+            }
+            if (source.Context.HouseholdId != displayed.HouseholdId ||
+                (join ? displayed.MemberDeviceKeys.Contains(deviceKey) :
+                    source.Context.CoordinatorDeviceKey != displayed.CoordinatorDeviceKey ||
+                    source.Context.MemberDeviceKeys.Order(StringComparer.Ordinal).SequenceEqual(displayed.MemberDeviceKeys.Order(StringComparer.Ordinal)) == false))
+            {
+                this._error = "media.context_changed";
+                return;
+            }
+            var destination = join ? displayed with { DeviceKey = displayed.CoordinatorDeviceKey } : null;
+            this._confirm = new MediaAction(deviceKey, action, new(source.Context,
+                Reference: destination?.DeviceKey, DestinationContext: destination));
+        }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Sends precisely the action reviewed in the confirmation panel.</summary>
+    private async Task SendConfirmedAsync()
+    {
+        if (this._confirm is null || this._busy) { return; }
+        this._unknownBlockObserved = false;
+        this._pending = this._confirm;
+        this._confirm = null;
+        await this.SubmitAsync();
+    }
+
+    /// <summary>Posts once and retains an ambiguous request until explicit same-request retry or lookup.</summary>
+    private async Task SubmitAsync()
+    {
+        if (this._pending is null || this._busy) { return; }
+        this._busy = true;
+        try
+        {
+            var result = await this._pending.SendAsync(this.Api, this._lifetime.Token);
+            this._error = result.ErrorCode;
+            if (result.IsSuccess)
+            {
+                this._operation = result.Value;
+                this._operationPolls = 0;
+                this._pending = null;
+            }
+            else if (result.StatusCode is >= 400 and < 500)
+            {
+                this._pending = null;
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Repeats only the identical request after an ambiguous transport result.</summary>
+    private Task RetryAsync() => this.SubmitAsync();
+
+    /// <summary>Looks up the original operation before considering another send.</summary>
+    private async Task CheckPendingAsync()
+    {
+        if (this._pending is null || this._busy) { return; }
+        this._busy = true;
+        try
+        {
+            var result = await this.Api.GetAsync<MediaOperationDto>("api/media/operations/" + this._pending.OperationId.ToString("D"), this._lifetime.Token);
+            this._error = result.ErrorCode;
+            if (result.IsSuccess) { this._operation = result.Value; this._pending = null; }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Shows durable progress independently of the freshly observed player state.</summary>
+    private async Task ReadOperationAsync()
+    {
+        if (this._operation is null) { return; }
+        var result = await this.Api.GetAsync<MediaOperationDto>("api/media/operations/" + this._operation.OperationId.ToString("D") +
+            (this._operation.EventSequence is long sequence ? "?minSequence=" + sequence.ToString(CultureInfo.InvariantCulture) : ""), this._lifetime.Token);
+        if (result.IsSuccess) { this._operation = result.Value; }
+        else if (result.ErrorCode != "projection.pending") { this._error = result.ErrorCode; }
+    }
+
+    /// <summary>Checks operation progress once on user request.</summary>
+    private async Task CheckOperationAsync()
+    {
+        if (this._busy) { return; }
+        this._busy = true;
+        try { await this.ReadOperationAsync(); }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Reads one bounded page from a live player; the queue revision joins later mutations.</summary>
+    private async Task LoadPageAsync(bool queue, int offset)
+    {
+        if (this._busy) { return; }
+        this._busy = true;
+        try
+        {
+            var result = await this.Api.GetAsync<MediaPageDto>("api/media/players/" + Uri.EscapeDataString(this.DeviceKey) +
+                (queue ? "/queue" : "/favorites") + "?offset=" + offset.ToString(CultureInfo.InvariantCulture) + "&limit=20", this._lifetime.Token);
+            this._error = result.ErrorCode;
+            if (result.IsSuccess)
+            {
+                if (queue) { this._queue = result.Value; }
+                else { this._favorites = result.Value; }
+            }
+        }
+        catch (OperationCanceledException) { }
+        finally { this._busy = false; }
+    }
+
+    /// <summary>Loads optional library panels only after the user opens them.</summary>
+    private async Task LoadLibraryAsync()
+    {
+        if (this._favorites is null) { await this.LoadPageAsync(false, 0); }
+        if (this._queue is null) { await this.LoadPageAsync(true, 0); }
+    }
+
+    /// <summary>Returns true only for definitive operation outcomes; uncertainty remains blocked by the API.</summary>
+    private static bool IsTerminal(MediaOperationDto operation) => operation.Status is "desired_state_observed" or "rejected" or "expired" or "revoked" or "outcome_unknown" ||
+        (operation.Status == "device_acknowledged" && operation.Code == "media.device.acknowledged");
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await this._lifetime.CancelAsync();
+        if (this._polling is not null) { await this._polling; }
+        this._lifetime.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

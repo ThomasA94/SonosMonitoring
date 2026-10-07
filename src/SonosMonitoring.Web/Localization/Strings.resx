@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+    <resheader name="version"><value>2.0</value></resheader>
+    <data name="Workspace" xml:space="preserve"><value>ARBEITSBEREICH</value></data>
+    <data name="Navigation" xml:space="preserve"><value>Hauptnavigation</value></data>
+    <data name="Overview" xml:space="preserve"><value>&#220;bersicht</value></data>
+    <data name="Devices" xml:space="preserve"><value>Ger&#228;te</value></data>
+    <data name="Groups" xml:space="preserve"><value>Gruppenkarte</value></data>
+    <data name="Metrics" xml:space="preserve"><value>Metriken</value></data>
+    <data name="History" xml:space="preserve"><value>&#196;nderungsverlauf</value></data>
+    <data name="Alerts" xml:space="preserve"><value>Meldungen</value></data>
+    <data name="Snapshots" xml:space="preserve"><value>Snapshots</value></data>
+    <data name="System" xml:space="preserve"><value>Erfassung</value></data>
+    <data name="LocalInstallation" xml:space="preserve"><value>Lokale Installation</value></data>
+    <data name="LocalSonosAccess" xml:space="preserve"><value>Erfassung und optionale lokale Steuerung</value></data>
+    <data name="Installation" xml:space="preserve"><value>Installation</value></data>
+    <data name="Monitoring" xml:space="preserve"><value>&#220;berwachung</value></data>
+    <data name="Footer" xml:space="preserve"><value>Beobachten. Verstehen. Nachvollziehen.</value></data>
+    <data name="SkipContent" xml:space="preserve"><value>Zum Inhalt</value></data>
+    <data name="Logout" xml:space="preserve"><value>Abmelden</value></data>
+    <data name="Loading" xml:space="preserve"><value>Daten werden geladen &#8230;</value></data>
+    <data name="Unknown" xml:space="preserve"><value>Unbekannt</value></data>
+    <data name="UnknownModel" xml:space="preserve"><value>Modell unbekannt</value></data>
+    <data name="AccessDenied" xml:space="preserve"><value>Zugriff verweigert. Bitte den API-Zugang in der Webhost-Konfiguration pr&#252;fen.</value></data>
+    <data name="Unconfigured" xml:space="preserve"><value>Diese Datenquelle ist im Backend noch nicht eingerichtet.</value></data>
+    <data name="ProjectionPending" xml:space="preserve"><value>Gespeichert. Die Leseansicht wartet noch auf die &#196;nderung.</value></data>
+    <data name="Conflict" xml:space="preserve"><value>Die Regel wurde inzwischen ge&#228;ndert. Bitte neu laden und die Aktion erneut pr&#252;fen.</value></data>
+    <data name="IntervalInvalid" xml:space="preserve"><value>Bitte ein Intervall zwischen 5 und 300 Sekunden eingeben.</value></data>
+    <data name="RequestFailed" xml:space="preserve"><value>Die Daten konnten nicht abgerufen werden. Verbindung und Erfassung pr&#252;fen und erneut versuchen.</value></data>
+    <data name="LastDataHint" xml:space="preserve"><value>Bereits angezeigte Daten stammen vom letzten erfolgreichen Abruf.</value></data>
+    <data name="Refresh" xml:space="preserve"><value>Aktualisieren</value></data>
+    <data name="Reload" xml:space="preserve"><value>Neu laden</value></data>
+    <data name="Disconnected" xml:space="preserve"><value>Verbindung unterbrochen</value></data>
+    <data name="ReconnectHint" xml:space="preserve"><value>Die Liveansicht wird gerade nicht aktualisiert. Die Verbindung wird erneut aufgebaut. Falls n&#246;tig, Seite neu laden.</value></data>
+    <data name="UnexpectedError" xml:space="preserve"><value>Die Ansicht konnte nicht fortgesetzt werden.</value></data>
+    <data name="Available" xml:space="preserve"><value>Verf&#252;gbar</value></data>
+    <data name="Failed" xml:space="preserve"><value>Abruf fehlgeschlagen</value></data>
+    <data name="Stale" xml:space="preserve"><value>Veraltet</value></data>
+    <data name="Unobserved" xml:space="preserve"><value>Noch nicht beobachtet</value></data>
+    <data name="LastAttempt" xml:space="preserve"><value>Letzter Versuch</value></data>
+    <data name="LastSuccess" xml:space="preserve"><value>Letzter Erfolg</value></data>
+    <data name="OverviewTitle" xml:space="preserve"><value>Dein System im Blick.</value></data>
+    <data name="OverviewDescription" xml:space="preserve"><value>Ger&#228;te, Datenqualit&#228;t und Ver&#228;nderungen deiner Sonos-Installation.</value></data>
+    <data name="CurrentObservation" xml:space="preserve"><value>AKTUELLE BEOBACHTUNG</value></data>
+    <data name="CollectionActive" xml:space="preserve"><value>Die Erfassung ist aktiviert.</value></data>
+    <data name="CollectionDisabled" xml:space="preserve"><value>Bereit f&#252;r die erste Beobachtung.</value></data>
+    <data name="ObservationHint" xml:space="preserve"><value>Jede Quelle erz&#228;hlt einen Teil der Geschichte. Den letzten Stand und sein Alter findest du hier.</value></data>
+    <data name="EnableCollectorHint" xml:space="preserve"><value>Der Collector ist deaktiviert. Aktiviere ihn in der Backend-Konfiguration, um deine Ger&#228;te zu erfassen.</value></data>
+    <data name="ViewSystem" xml:space="preserve"><value>Erfassung ansehen</value></data>
+    <data name="DiscoveredDevices" xml:space="preserve"><value>Entdeckte Ger&#228;te</value></data>
+    <data name="SearchRanges" xml:space="preserve"><value>Suchbereiche</value></data>
+    <data name="CurrentCache" xml:space="preserve"><value>Im aktuellen Erfassungsstand</value></data>
+    <data name="ConfiguredRanges" xml:space="preserve"><value>Konfigurierte IPv4-Netze</value></data>
+    <data name="Heartbeat" xml:space="preserve"><value>Collector-Heartbeat</value></data>
+    <data name="NotDeviceHealth" xml:space="preserve"><value>Kein Nachweis f&#252;r Ger&#228;tegesundheit</value></data>
+    <data name="Updated" xml:space="preserve"><value>Zuletzt abgerufen</value></data>
+    <data name="RefreshEvery10" xml:space="preserve"><value>Automatisch alle 10 Sekunden</value></data>
+    <data name="CapacityExceeded" xml:space="preserve"><value>Die Ger&#228;tekapazit&#228;t ist erreicht. Weitere gefundene Ger&#228;te fehlen m&#246;glicherweise in dieser Ansicht.</value></data>
+    <data name="YourDevices" xml:space="preserve"><value>Deine Ger&#228;te</value></data>
+    <data name="ViewAll" xml:space="preserve"><value>Alle ansehen</value></data>
+    <data name="NoDevices" xml:space="preserve"><value>Noch keine Ger&#228;te beobachtet</value></data>
+    <data name="NoDevicesHint" xml:space="preserve"><value>Pr&#252;fe Collector-Freigabe, Suchbereiche und Netzwerkzugriff in der Erfassungsansicht.</value></data>
+    <data name="MetricsDescription" xml:space="preserve"><value>Messreihen aus Prometheus, mit Aufl&#246;sung und sichtbaren L&#252;cken.</value></data>
+    <data name="SnapshotDescription" xml:space="preserve"><value>Einen Diagnosezustand sichern oder unabh&#228;ngig vom Livestand ansehen.</value></data>
+    <data name="DevicesDescription" xml:space="preserve"><value>Quellenstatus je Ger&#228;t. Ein fehlgeschlagener Abruf ist kein Nachweis f&#252;r einen Lautsprecherausfall.</value></data>
+    <data name="SearchDevices" xml:space="preserve"><value>Ger&#228;te suchen</value></data>
+    <data name="SearchPlaceholder" xml:space="preserve"><value>Raum, Modell, Adresse oder Kennung</value></data>
+    <data name="SourceQuality" xml:space="preserve"><value>Quellenqualit&#228;t</value></data>
+    <data name="All" xml:space="preserve"><value>Alle</value></data>
+    <data name="NeedsAttention" xml:space="preserve"><value>Pr&#252;fen</value></data>
+    <data name="NoResults" xml:space="preserve"><value>Keine passenden Eintr&#228;ge</value></data>
+    <data name="FilterHint" xml:space="preserve"><value>Passe die Filter an oder lade den aktuellen Stand neu.</value></data>
+    <data name="Login" xml:space="preserve"><value>Anmelden</value></data>
+    <data name="LoginHint" xml:space="preserve"><value>Mit dem Zugangsschl&#252;ssel dieser Installation fortfahren.</value></data>
+    <data name="LoginFailed" xml:space="preserve"><value>Der Zugangsschl&#252;ssel wurde nicht akzeptiert.</value></data>
+    <data name="AccessKey" xml:space="preserve"><value>Zugangsschl&#252;ssel</value></data>
+    <data name="NotFound" xml:space="preserve"><value>Seite nicht gefunden</value></data>
+    <data name="NotFoundHint" xml:space="preserve"><value>Diese Adresse ist nicht verf&#252;gbar. Die &#220;bersicht f&#252;hrt dich zur&#252;ck.</value></data>
+    <data name="DeviceDetails" xml:space="preserve"><value>Ger&#228;tedetails</value></data>
+    <data name="BackDevices" xml:space="preserve"><value>Alle Ger&#228;te</value></data>
+    <data name="Identity" xml:space="preserve"><value>Kennung</value></data>
+    <data name="Address" xml:space="preserve"><value>Adresse</value></data>
+    <data name="Model" xml:space="preserve"><value>Modell</value></data>
+    <data name="FirstSeen" xml:space="preserve"><value>Zuerst beobachtet</value></data>
+    <data name="LastSeen" xml:space="preserve"><value>Zuletzt beobachtet</value></data>
+    <data name="DescriptionSource" xml:space="preserve"><value>Ger&#228;tebeschreibung</value></data>
+    <data name="InterfaceSource" xml:space="preserve"><value>Interface-Diagnose</value></data>
+    <data name="TopologySource" xml:space="preserve"><value>Gruppentopologie</value></data>
+    <data name="RawCounters" xml:space="preserve"><value>Rohe Interface-Z&#228;hler</value></data>
+    <data name="RawCountersHint" xml:space="preserve"><value>Gespeicherte Z&#228;hlerst&#228;nde; keine &#220;bertragungsraten. Die Quellenqualit&#228;t gilt f&#252;r alle Werte.</value></data>
+    <data name="Interface" xml:space="preserve"><value>Interface</value></data>
+    <data name="Receive" xml:space="preserve"><value>Empfangen</value></data>
+    <data name="Transmit" xml:space="preserve"><value>Gesendet</value></data>
+    <data name="Bytes" xml:space="preserve"><value>Bytes</value></data>
+    <data name="Packets" xml:space="preserve"><value>Pakete</value></data>
+    <data name="Errors" xml:space="preserve"><value>Fehler</value></data>
+    <data name="Dropped" xml:space="preserve"><value>Verworfen</value></data>
+    <data name="NoCounters" xml:space="preserve"><value>Keine Interface-Z&#228;hler verf&#252;gbar.</value></data>
+    <data name="EventPath" xml:space="preserve"><value>Ereignisempfang</value></data>
+    <data name="Enabled" xml:space="preserve"><value>Aktiviert</value></data>
+    <data name="Disabled" xml:space="preserve"><value>Deaktiviert</value></data>
+    <data name="Subscribed" xml:space="preserve"><value>Abonniert</value></data>
+    <data name="InitialReceived" xml:space="preserve"><value>Initialmeldung empfangen</value></data>
+    <data name="Expires" xml:space="preserve"><value>Ablauf</value></data>
+    <data name="LastNotification" xml:space="preserve"><value>Letzte Meldung</value></data>
+    <data name="Yes" xml:space="preserve"><value>Ja</value></data>
+    <data name="No" xml:space="preserve"><value>Nein</value></data>
+    <data name="PollingHint" xml:space="preserve"><value>Ereignisempfang und HTTP-Abrufe sind unabh&#228;ngige Quellen. Polling bleibt der R&#252;ckfall.</value></data>
+    <data name="Policy" xml:space="preserve"><value>&#220;berwachungsregel</value></data>
+    <data name="PolicyHint" xml:space="preserve"><value>Steuert ausschlie&#223;lich die Erfassung dieses Ger&#228;ts. Keine &#196;nderung an der Sonos-Wiedergabe.</value></data>
+    <data name="NoPolicy" xml:space="preserve"><value>Noch keine &#220;berwachungsregel. Bei aktivem fachlichem Backend muss die Diagnose f&#252;r jedes Ger&#228;t ausdr&#252;cklich aktiviert werden.</value></data>
+    <data name="Interval" xml:space="preserve"><value>Intervall (Sekunden)</value></data>
+    <data name="EnableMonitoring" xml:space="preserve"><value>&#220;berwachung aktivieren</value></data>
+    <data name="DisableMonitoring" xml:space="preserve"><value>&#220;berwachung deaktivieren</value></data>
+    <data name="ConfirmDisable" xml:space="preserve"><value>Erfassung f&#252;r dieses Ger&#228;t deaktivieren?</value></data>
+    <data name="ConfirmDisableHint" xml:space="preserve"><value>Die Regel wird gespeichert. Die Sonos-Wiedergabe bleibt unver&#228;ndert.</value></data>
+    <data name="Confirm" xml:space="preserve"><value>Best&#228;tigen</value></data>
+    <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+    <data name="RetryAction" xml:space="preserve"><value>Dieselbe Aktion wiederholen</value></data>
+    <data name="UnknownCommit" xml:space="preserve"><value>Die Antwort fehlt. Die Aktion k&#246;nnte bereits gespeichert sein. Wiederholen verwendet dieselbe Aktionskennung und Eingabe.</value></data>
+    <data name="Saved" xml:space="preserve"><value>Gespeichert und in der Leseansicht sichtbar.</value></data>
+    <data name="CheckProjection" xml:space="preserve"><value>Leseansicht pr&#252;fen</value></data>
+    <data name="TokenMissing" xml:space="preserve"><value>Die Regel ist sichtbar, aber der &#196;nderungstoken fehlt. Backendversion und Eventhistorie pr&#252;fen.</value></data>
+    <data name="Sequence" xml:space="preserve"><value>Stand</value></data>
+    <data name="GroupsDescription" xml:space="preserve"><value>Beobachtete Wiedergabegruppen &#8211; aus Sicht eines ausgew&#228;hlten Reporters.</value></data>
+    <data name="Reporter" xml:space="preserve"><value>Reporter</value></data>
+    <data name="Map" xml:space="preserve"><value>Karte</value></data>
+    <data name="List" xml:space="preserve"><value>Liste</value></data>
+    <data name="Coordinator" xml:space="preserve"><value>Koordinator</value></data>
+    <data name="Members" xml:space="preserve"><value>Mitglieder</value></data>
+    <data name="Group" xml:space="preserve"><value>Gruppe</value></data>
+    <data name="GroupHint" xml:space="preserve"><value>Linien zeigen Gruppenmitgliedschaft, keine WLAN-, LAN- oder Meshverbindung. Unbekannte Netzwerkpfade werden nicht gesch&#228;tzt.</value></data>
+    <data name="NoGroups" xml:space="preserve"><value>Keine Gruppen beobachtet</value></data>
+    <data name="NoGroupsHint" xml:space="preserve"><value>W&#228;hle einen Reporter mit verf&#252;gbarer Topologie. Alte Daten behalten ihre Quellenkennzeichnung.</value></data>
+    <data name="ZoomIn" xml:space="preserve"><value>Vergr&#246;&#223;ern</value></data>
+    <data name="ZoomOut" xml:space="preserve"><value>Verkleinern</value></data>
+    <data name="ResetView" xml:space="preserve"><value>Ansicht zur&#252;cksetzen</value></data>
+    <data name="PanHint" xml:space="preserve"><value>Ziehen oder mit Pfeiltasten verschieben. Ger&#228;te sind auch &#252;ber die Liste ausw&#228;hlbar.</value></data>
+    <data name="UnknownDevice" xml:space="preserve"><value>Nur als Referenz beobachtet</value></data>
+    <data name="Parent" xml:space="preserve"><value>&#220;bergeordnetes Mitglied</value></data>
+    <data name="Hidden" xml:space="preserve"><value>Unsichtbar gemeldet</value></data>
+    <data name="Metric" xml:space="preserve"><value>Metrik</value></data>
+    <data name="Period" xml:space="preserve"><value>Zeitraum</value></data>
+    <data name="LastHour" xml:space="preserve"><value>Letzte Stunde</value></data>
+    <data name="LastDay" xml:space="preserve"><value>Letzte 24 Stunden</value></data>
+    <data name="LastWeek" xml:space="preserve"><value>Letzte 7 Tage</value></data>
+    <data name="LastMonth" xml:space="preserve"><value>Letzte 30 Tage</value></data>
+    <data name="LastYear" xml:space="preserve"><value>Letzte 365 Tage</value></data>
+    <data name="Query" xml:space="preserve"><value>Abfragen</value></data>
+    <data name="SelectDevice" xml:space="preserve"><value>Ger&#228;t ausw&#228;hlen</value></data>
+    <data name="receive_rate" xml:space="preserve"><value>Empfangsrate</value></data>
+    <data name="transmit_rate" xml:space="preserve"><value>Senderate</value></data>
+    <data name="receive_bytes" xml:space="preserve"><value>Empfangene Bytes (Z&#228;hler)</value></data>
+    <data name="transmit_bytes" xml:space="preserve"><value>Gesendete Bytes (Z&#228;hler)</value></data>
+    <data name="probe_success" xml:space="preserve"><value>Beschreibungsabruf erfolgreich</value></data>
+    <data name="MetricHint" xml:space="preserve"><value>Raten berechnet Prometheus &#252;ber zwei Minuten. Fehlende Werte werden weder verbunden noch als Null aufgef&#252;llt. Z&#228;hler k&#246;nnen nach einem Neustart zur&#252;ckspringen.</value></data>
+    <data name="NoMeasurements" xml:space="preserve"><value>Keine Messwerte im Zeitraum</value></data>
+    <data name="NoMeasurementsHint" xml:space="preserve"><value>Pr&#252;fe Ger&#228;teauswahl, Zeitbereich, Prometheus und dessen Aufbewahrung.</value></data>
+    <data name="Resolution" xml:space="preserve"><value>Aufl&#246;sung</value></data>
+    <data name="Seconds" xml:space="preserve"><value>Sekunden</value></data>
+    <data name="Values" xml:space="preserve"><value>Messwerte</value></data>
+    <data name="Time" xml:space="preserve"><value>Zeitpunkt</value></data>
+    <data name="Value" xml:space="preserve"><value>Wert</value></data>
+    <data name="Unit" xml:space="preserve"><value>Einheit</value></data>
+    <data name="Missing" xml:space="preserve"><value>Messl&#252;cke</value></data>
+    <data name="HistoryDescription" xml:space="preserve"><value>Gespeicherte Beobachtungen und explizite Erfassungsl&#252;cken, in zeitlicher Reihenfolge.</value></data>
+    <data name="LoadMore" xml:space="preserve"><value>Weitere laden</value></data>
+    <data name="RestartHistory" xml:space="preserve"><value>Von vorne laden</value></data>
+    <data name="Retention" xml:space="preserve"><value>Aufbewahrung</value></data>
+    <data name="Days" xml:space="preserve"><value>Tage</value></data>
+    <data name="Entries" xml:space="preserve"><value>Eintr&#228;ge</value></data>
+    <data name="RetentionGap" xml:space="preserve"><value>&#196;ltere Eintr&#228;ge wurden bereits entfernt. Dieser Verlauf ist unvollst&#228;ndig.</value></data>
+    <data name="baseline" xml:space="preserve"><value>Ausgangsbeobachtung</value></data>
+    <data name="change" xml:space="preserve"><value>&#196;nderung</value></data>
+    <data name="gap" xml:space="preserve"><value>Erfassungsl&#252;cke</value></data>
+    <data name="Before" xml:space="preserve"><value>Vorher</value></data>
+    <data name="After" xml:space="preserve"><value>Nachher</value></data>
+    <data name="NoHistory" xml:space="preserve"><value>Keine gespeicherten &#196;nderungen</value></data>
+    <data name="NoHistoryHint" xml:space="preserve"><value>Das Journal muss im Backend aktiviert sein. Unver&#228;nderte Abfragen erzeugen keine neuen Eintr&#228;ge.</value></data>
+    <data name="JournalHint" xml:space="preserve"><value>Der Verlauf enth&#228;lt Stichproben. Schnelle Zwischenst&#228;nde k&#246;nnen fehlen; Aufbewahrung begrenzt die Historie.</value></data>
+    <data name="AlertsDescription" xml:space="preserve"><value>Aktuelle interne St&#246;rungen und ausdr&#252;cklich best&#228;tigte Erholungen.</value></data>
+    <data name="AlertsHint" xml:space="preserve"><value>Eine verschwundene Meldung ist kein Erholungsnachweis. Erholungen ben&#246;tigen positive Quellenbeobachtungen und fr&#252;here St&#246;rungsevidenz innerhalb von 24 Stunden.</value></data>
+    <data name="NoAlerts" xml:space="preserve"><value>Keine aktuellen Meldungen</value></data>
+    <data name="NoAlertsHint" xml:space="preserve"><value>Die Meldungsquelle hat keine Eintr&#228;ge geliefert. Dies ist keine Aussage &#252;ber die Audiowiedergabe.</value></data>
+    <data name="pending" xml:space="preserve"><value>In Pr&#252;fung</value></data>
+    <data name="firing" xml:space="preserve"><value>Aktive St&#246;rung</value></data>
+    <data name="recovered" xml:space="preserve"><value>Erholung best&#228;tigt</value></data>
+    <data name="Evaluated" xml:space="preserve"><value>Bewertet</value></data>
+    <data name="ActiveSince" xml:space="preserve"><value>Beginn</value></data>
+    <data name="Recovery" xml:space="preserve"><value>Positive Beobachtung seit</value></data>
+    <data name="SonosApiUnavailable" xml:space="preserve"><value>API nicht erreichbar</value></data>
+    <data name="SonosCollectorUnavailable" xml:space="preserve"><value>Collector nicht beobachtbar</value></data>
+    <data name="SonosDeviceUnavailable" xml:space="preserve"><value>Ger&#228;tebeschreibung nicht erreichbar</value></data>
+    <data name="SnapshotTitle" xml:space="preserve"><value>Diagnose festhalten.</value></data>
+    <data name="Download" xml:space="preserve"><value>Snapshot herunterladen</value></data>
+    <data name="OpenSnapshot" xml:space="preserve"><value>Snapshot &#246;ffnen</value></data>
+    <data name="Offline" xml:space="preserve"><value>Offlineansicht</value></data>
+    <data name="Captured" xml:space="preserve"><value>Aufgenommen</value></data>
+    <data name="Privacy" xml:space="preserve"><value>Kennungen reduziert; keine Garantie f&#252;r Anonymit&#228;t.</value></data>
+    <data name="SnapshotInvalid" xml:space="preserve"><value>Die Datei ist kein unterst&#252;tzter Snapshot (Schema 1, maximal 4 MiB).</value></data>
+    <data name="SnapshotHint" xml:space="preserve"><value>Eine JSON-Datei wird nur f&#252;r diese Ansicht eingelesen. Sie ersetzt keinen Livestand und wird nicht dauerhaft gespeichert.</value></data>
+    <data name="CloseSnapshot" xml:space="preserve"><value>Offlineansicht schlie&#223;en</value></data>
+    <data name="Schema" xml:space="preserve"><value>Schema</value></data>
+    <data name="NoSnapshot" xml:space="preserve"><value>Ein Zustand, unabh&#228;ngig vom Jetzt.</value></data>
+    <data name="NoSnapshotHint" xml:space="preserve"><value>Lade einen reduzierten Diagnoseexport herunter oder &#246;ffne eine bereits gespeicherte JSON-Datei.</value></data>
+    <data name="SystemDescription" xml:space="preserve"><value>Transparenz &#252;ber Suchbereiche, Zeitpunkte und Grenzen der Erfassung.</value></data>
+    <data name="LastSweep" xml:space="preserve"><value>Letzter Erfassungsdurchlauf</value></data>
+    <data name="Discovery" xml:space="preserve"><value>Discovery</value></data>
+    <data name="Candidates" xml:space="preserve"><value>Kandidaten</value></data>
+    <data name="LimitReached" xml:space="preserve"><value>Limit erreicht</value></data>
+    <data name="Probed" xml:space="preserve"><value>Adressen gepr&#252;ft</value></data>
+    <data name="Found" xml:space="preserve"><value>Ger&#228;te gefunden</value></data>
+    <data name="ConfigurationHint" xml:space="preserve"><value>Suchbereiche, Collector und Datenquellen werden &#252;ber die Backend-Konfiguration verwaltet. &#196;nderungen erfordern einen Neustart des jeweiligen Dienstes.</value></data>
+    <data name="NoRanges" xml:space="preserve"><value>Keine Suchbereiche konfiguriert.</value></data>
+    <data name="Details" xml:space="preserve"><value>Details</value></data>
+    <data name="Pause" xml:space="preserve"><value>Aktualisierung pausieren</value></data>
+    <data name="Resume" xml:space="preserve"><value>Aktualisierung fortsetzen</value></data>
+    <data name="HistoryLimit" xml:space="preserve"><value>Anzeige auf 1.000 Eintr&#228;ge begrenzt. Mit dem n&#228;chsten Abschnitt fortfahren.</value></data>
+    <data name="NextSection" xml:space="preserve"><value>N&#228;chster Abschnitt</value></data>
+    <data name="collector_restart" xml:space="preserve"><value>Collector neu gestartet; die Abdeckung dazwischen ist unbekannt.</value></data>
+    <data name="storage_unavailable" xml:space="preserve"><value>Speicherung unterbrochen; Beobachtungen k&#246;nnen fehlen.</value></data>
+    <data name="collector_resumed" xml:space="preserve"><value>Erfassung wieder aufgenommen.</value></data>
+    <data name="collector_unavailable" xml:space="preserve"><value>Collector lieferte keine aktuellen Beobachtungen.</value></data>
+    <data name="SonosCollectorInterrupted" xml:space="preserve"><value>Erfassung unterbrochen</value></data>
+    <data name="SonosDeviceDescriptionUnavailable" xml:space="preserve"><value>Ger&#228;tebeschreibung nicht erreichbar</value></data>
+    <data name="HistoryStart" xml:space="preserve"><value>Beginn</value></data>
+    <data name="HistoryEnd" xml:space="preserve"><value>Ende</value></data>
+    <data name="Custom" xml:space="preserve"><value>Eigener Zeitraum</value></data>
+    <data name="InvalidPeriod" xml:space="preserve"><value>Der Beginn muss vor dem Ende liegen (maximal 4.000 Tage).</value></data>
+  <data name="Settings" xml:space="preserve"><value>Einstellungen</value></data>
+  <data name="SettingsDescription" xml:space="preserve"><value>Erfassung und Netzwerksuche f&#252;r diese Installation konfigurieren.</value></data>
+  <data name="SettingsHint" xml:space="preserve"><value>Speichern &#252;bernimmt die Einstellungen sofort und dauerhaft. Laufende Abfragen werden beendet und die Liveansicht wird neu aufgebaut. Ger&#228;tebezogene &#220;berwachungsregeln bleiben erhalten.</value></data>
+  <data name="SettingsScope" xml:space="preserve"><value>Zugriffsschl&#252;ssel, Datenbankzug&#228;nge und Container-Netzwerkfreigaben werden weiterhin beim Betrieb der Installation eingerichtet.</value></data>
+  <data name="SaveSettings" xml:space="preserve"><value>Speichern und anwenden</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Einstellungen gespeichert und &#252;bernommen.</value></data>
+  <data name="SettingsRetry" xml:space="preserve"><value>Speichern erneut best&#228;tigen</value></data>
+  <data name="SettingsInvalid" xml:space="preserve"><value>Ung&#252;ltige Erfassungseinstellungen. Pr&#252;fe insbesondere IPv4-CIDRs, Startadressen innerhalb der Suchnetze, lokale SSDP-Schnittstellen, GENA-R&#252;ckweg und Zeitgrenzen. Das Suchintervall muss mindestens dem Abfrageintervall entsprechen; die Ger&#228;teobergrenze darf das Adresslimit nicht &#252;bersteigen.</value></data>
+  <data name="SettingsStorage" xml:space="preserve"><value>Die Einstellungen konnten nicht dauerhaft gespeichert werden. Pr&#252;fe den beschreibbaren Konfigurationsspeicher der API.</value></data>
+  <data name="SettingsPending" xml:space="preserve"><value>Die Best&#228;tigung fehlt. Wiederhole dieselbe Speicherung oder lade den aktuellen Stand, bevor du weiter bearbeitest.</value></data>
+  <data name="AcquisitionEnabled" xml:space="preserve"><value>Erfassung aktiv</value></data>
+  <data name="Networks" xml:space="preserve"><value>Suchnetze und Startadressen</value></data>
+  <data name="AllowedCidrs" xml:space="preserve"><value>Erlaubte IPv4-Netze (CIDR, eine Zeile pro Netz)</value></data>
+  <data name="SeedAddresses" xml:space="preserve"><value>Startadressen (IPv4, eine Adresse pro Zeile)</value></data>
+  <data name="NetworkHint" xml:space="preserve"><value>Beispiel: 192.168.1.0/24 oder ein einzelnes Ger&#228;t als 192.168.1.20/32. Nur freigegebene Netze werden abgefragt. Zum Start mindestens ein Netz eintragen und Erfassung aktivieren.</value></data>
+  <data name="TimingLimits" xml:space="preserve"><value>Intervalle und Grenzen</value></data>
+  <data name="PollInterval" xml:space="preserve"><value>Abfrageintervall (Sekunden)</value></data>
+  <data name="DiscoveryInterval" xml:space="preserve"><value>Suchintervall (Sekunden)</value></data>
+  <data name="StaleAfter" xml:space="preserve"><value>Veraltet nach (Sekunden)</value></data>
+  <data name="RequestTimeout" xml:space="preserve"><value>Anfragezeitlimit (Sekunden)</value></data>
+  <data name="SweepTimeout" xml:space="preserve"><value>Durchlaufzeitlimit (Sekunden)</value></data>
+  <data name="MaxScanAddresses" xml:space="preserve"><value>Maximale Suchadressen</value></data>
+  <data name="MaxKnownDevices" xml:space="preserve"><value>Maximale bekannte Ger&#228;te</value></data>
+  <data name="MaxTopologyCandidates" xml:space="preserve"><value>Maximale Topologiekandidaten</value></data>
+  <data name="MaxParallelism" xml:space="preserve"><value>Parallele Anfragen</value></data>
+  <data name="MaxResponseBytes" xml:space="preserve"><value>Maximale Antwortgr&#246;&#223;e (Bytes)</value></data>
+  <data name="SsdpEnabled" xml:space="preserve"><value>SSDP-Suche aktiv</value></data>
+  <data name="SsdpInterfaceAddresses" xml:space="preserve"><value>Lokale IPv4-Schnittstellen f&#252;r SSDP (eine pro Zeile)</value></data>
+  <data name="SsdpSearchWindow" xml:space="preserve"><value>SSDP-Empfangsfenster (Sekunden)</value></data>
+  <data name="SsdpMaxDatagrams" xml:space="preserve"><value>Maximale SSDP-Datagramme je Schnittstelle</value></data>
+  <data name="SsdpHint" xml:space="preserve"><value>Schnittstellen m&#252;ssen der API-Umgebung zugewiesen sein. Container ben&#246;tigen eine passende Multicast-Netzwerkanbindung.</value></data>
+  <data name="GenaEnabled" xml:space="preserve"><value>GENA-Ereignisempfang aktiv</value></data>
+  <data name="GenaListenAddress" xml:space="preserve"><value>GENA-Bindeadresse (IPv4)</value></data>
+  <data name="GenaCallbackAddress" xml:space="preserve"><value>Von Ger&#228;ten erreichbare R&#252;ckrufadresse (IPv4)</value></data>
+  <data name="GenaPort" xml:space="preserve"><value>GENA-R&#252;ckrufport</value></data>
+  <data name="GenaRequestedLeaseSeconds" xml:space="preserve"><value>GENA-Abonnementdauer (Sekunden)</value></data>
+  <data name="GenaInitialNotificationTimeout" xml:space="preserve"><value>Erste Benachrichtigung: Zeitlimit (Sekunden)</value></data>
+  <data name="GenaMinimumPollInterval" xml:space="preserve"><value>GENA-Mindestabstand (Sekunden)</value></data>
+  <data name="GenaHint" xml:space="preserve"><value>Ben&#246;tigt aktive Erfassung und einen vom Sonos-Netz erreichbaren R&#252;ckrufport. Bei fehlendem R&#252;ckweg l&#228;uft Polling weiter.</value></data>
+  <data name="Topology" xml:space="preserve"><value>Topologie</value></data>
+  <data name="TopologyLegend" xml:space="preserve"><value>Violett: Koordinator &#183; T&#252;rkis: beobachtetes Mitglied &#183; Grau: unbeobachtete Referenz &#183; Gestrichelt: Gruppenmitgliedschaft &#183; Durchgezogen: gemeldete Satellitenbeziehung</value></data>
+  <data name="TopologyHelp" xml:space="preserve"><value>Knoten antippen f&#252;r Details; ziehen zum Anordnen. Mit zwei Fingern zoomen. Tastatur: Pfeile verschieben, +/&#8722; zoomen, 0 passt ein. Die Liste bietet dieselben Beziehungen ohne grafische Bedienung.</value></data>
+  <data name="TopologyLimits" xml:space="preserve"><value>Gruppen und Satelliten aus der ausgew&#228;hlten Quelle. Routerpfade, WLAN-Signalst&#228;rke, Stereo-/Heimkinorollen und Datenfluss werden noch nicht gemessen.</value></data>
+  <data name="Layout" xml:space="preserve"><value>Neu anordnen</value></data>
+  <data name="MapUnavailable" xml:space="preserve"><value>Karte konnte nicht geladen werden. Die Liste bleibt verf&#252;gbar.</value></data>
+  <data name="SelectNode" xml:space="preserve"><value>Ger&#228;t in der Karte ausw&#228;hlen</value></data>
+    <data name="MonitoringDisabled" xml:space="preserve"><value>&#220;berwachung deaktiviert</value></data>
+    <data name="MonitoringDisabledHint" xml:space="preserve"><value>Diagnosen sind f&#252;r dieses Ger&#228;t nicht aktiviert. &#220;berpr&#252;fe die Ger&#228;te&#252;berwachung; neue Messwerte entstehen erst nach der Aktivierung.</value></data>
+    <data name="PolicyUnavailable" xml:space="preserve"><value>&#220;berwachungsregel nicht verf&#252;gbar</value></data>
+    <data name="PolicyUnavailableHint" xml:space="preserve"><value>Die &#220;berwachungsregel konnte nicht gelesen werden. Pr&#252;fe Backend, Projektionen und Ger&#228;te&#252;berwachung.</value></data>
+    <data name="Unsupported" xml:space="preserve"><value>Nicht unterst&#252;tzt</value></data>
+    <data name="UnsupportedHint" xml:space="preserve"><value>Dieses Ger&#228;t bietet die ben&#246;tigte Quelle nicht an. Fehlende Werte bedeuten nicht null.</value></data>
+    <data name="DiagnosticsNotDue" xml:space="preserve"><value>N&#228;chste Diagnose noch nicht f&#228;llig</value></data>
+    <data name="DiagnosticsNotDueHint" xml:space="preserve"><value>Das wirksame Diagnoseintervall ist noch nicht abgelaufen. Messzeitpunkt und Quellenqualit&#228;t bleiben ma&#223;geblich.</value></data>
+    <data name="DataAge" xml:space="preserve"><value>Datenalter</value></data>
+    <data name="EffectiveInterval" xml:space="preserve"><value>Wirksames Diagnoseintervall</value></data>
+    <data name="ReviewMonitoring" xml:space="preserve"><value>Ger&#228;te&#252;berwachung pr&#252;fen</value></data>
+    <data name="SoftwareVersion" xml:space="preserve"><value>Softwareversion</value></data>
+    <data name="HardwareVersion" xml:space="preserve"><value>Hardwareversion</value></data>
+    <data name="ModelNumber" xml:space="preserve"><value>Modellnummer</value></data>
+    <data name="Wireless" xml:space="preserve"><value>WLAN-Quelle</value></data>
+    <data name="Ethernet" xml:space="preserve"><value>Ethernet-Quelle</value></data>
+    <data name="WifiMode" xml:space="preserve"><value>WLAN-Modus</value></data>
+    <data name="ConnectionType" xml:space="preserve"><value>Gemeldete Verbindungsart</value></data>
+    <data name="SonosNetDisabled" xml:space="preserve"><value>SonosNet deaktiviert (gemeldet)</value></data>
+    <data name="Port" xml:space="preserve"><value>Port</value></data>
+    <data name="LinkUp" xml:space="preserve"><value>Link aktiv</value></data>
+    <data name="LinkDown" xml:space="preserve"><value>Kein aktiver Link</value></data>
+    <data name="ReportedSpeed" xml:space="preserve"><value>Gemeldeter Geschwindigkeitswert (Einheit unbelegt)</value></data>
+    <data name="Playback" xml:space="preserve"><value>Wiedergabe</value></data>
+    <data name="Volume" xml:space="preserve"><value>Lautst&#228;rke</value></data>
+    <data name="Muted" xml:space="preserve"><value>Stumm</value></data>
+    <data name="NetworkObservationHint" xml:space="preserve"><value>SonosNet nicht deaktiviert bedeutet keine aktive SonosNet-Verbindung. Ein inaktiver Ethernet-Link bedeutet keinen Ger&#228;teausfall.</value></data>
+    <data name="RateSample" xml:space="preserve"><value>Ratenprobe</value></data>
+    <data name="RateSelectionHint" xml:space="preserve"><value>br0 wird bevorzugt, sonst das erste Interface au&#223;er lo. Interfaces werden nicht addiert; Reset und Messl&#252;cke bleiben unbekannt.</value></data>
+    <data name="LivePolling" xml:space="preserve"><value>Die Webansicht fragt alle 10 Sekunden ab. GENA-Ereignisempfang und Quellenalter werden separat angezeigt.</value></data>
+    <data name="AutoRefreshCharts" xml:space="preserve"><value>Diagramme alle 10 Sekunden aktualisieren (relative Zeitr&#228;ume)</value></data>
+    <data name="Source" xml:space="preserve"><value>Quelle</value></data>
+    <data name="MetricName_receive_rate" xml:space="preserve"><value>Empfangsrate</value></data>
+    <data name="MetricName_transmit_rate" xml:space="preserve"><value>Senderate</value></data>
+    <data name="MetricName_receive_bytes" xml:space="preserve"><value>Empfangene Bytes (Z&#228;hler)</value></data>
+    <data name="MetricName_transmit_bytes" xml:space="preserve"><value>Gesendete Bytes (Z&#228;hler)</value></data>
+    <data name="MetricName_probe_success" xml:space="preserve"><value>Beschreibungsabruf erfolgreich</value></data>
+    <data name="MetricName_receive_packets" xml:space="preserve"><value>Empfangene Pakete</value></data>
+    <data name="MetricName_transmit_packets" xml:space="preserve"><value>Gesendete Pakete</value></data>
+    <data name="MetricName_receive_errors" xml:space="preserve"><value>Empfangene Fehler</value></data>
+    <data name="MetricName_transmit_errors" xml:space="preserve"><value>Gesendete Fehler</value></data>
+    <data name="MetricName_receive_dropped" xml:space="preserve"><value>Empfangene Drops</value></data>
+    <data name="MetricName_transmit_dropped" xml:space="preserve"><value>Gesendete Drops</value></data>
+    <data name="MetricName_source_success" xml:space="preserve"><value>Quellenabruf erfolgreich</value></data>
+    <data name="MetricName_source_fresh" xml:space="preserve"><value>Quelle aktuell</value></data>
+    <data name="MetricName_source_age" xml:space="preserve"><value>Quellenalter</value></data>
+    <data name="MetricName_gena_subscribed" xml:space="preserve"><value>GENA angemeldet</value></data>
+    <data name="MetricName_gena_initial_received" xml:space="preserve"><value>GENA Initialereignis empfangen</value></data>
+    <data name="MetricName_gena_last_notification_age" xml:space="preserve"><value>Alter des letzten GENA-Ereignisses</value></data>
+    <data name="MetricName_probe_duration" xml:space="preserve"><value>Abrufdauer</value></data>
+    <data name="MetricName_volume" xml:space="preserve"><value>Lautst&#228;rke</value></data>
+    <data name="MetricName_muted" xml:space="preserve"><value>Stumm</value></data>
+    <data name="MetricName_receive_packets_rate" xml:space="preserve"><value>Empfangene Pakete/s</value></data>
+    <data name="MetricName_receive_errors_rate" xml:space="preserve"><value>Empfangene Fehler/s</value></data>
+    <data name="MetricName_receive_dropped_rate" xml:space="preserve"><value>Empfangene Drops/s</value></data>
+    <data name="MetricName_transmit_packets_rate" xml:space="preserve"><value>Gesendete Pakete/s</value></data>
+    <data name="MetricName_transmit_errors_rate" xml:space="preserve"><value>Gesendete Fehler/s</value></data>
+    <data name="MetricName_transmit_dropped_rate" xml:space="preserve"><value>Gesendete Drops/s</value></data>
+    <data name="SourceName_description" xml:space="preserve"><value>Ger&#228;tebeschreibung</value></data>
+    <data name="SourceName_ifconfig" xml:space="preserve"><value>Interface-Diagnose</value></data>
+    <data name="SourceName_topology" xml:space="preserve"><value>Gruppentopologie</value></data>
+    <data name="SourceName_wireless" xml:space="preserve"><value>WLAN</value></data>
+    <data name="SourceName_ethernet" xml:space="preserve"><value>Ethernet</value></data>
+    <data name="SourceName_playback" xml:space="preserve"><value>Wiedergabe</value></data>
+    <data name="SourceName_volume" xml:space="preserve"><value>Lautst&#228;rke</value></data>
+    <data name="ProbeLatency" xml:space="preserve"><value>Beschreibungsabrufdauer</value></data>
+    <data name="Observation_PLAYING" xml:space="preserve"><value>Spielt</value></data>
+    <data name="Observation_STOPPED" xml:space="preserve"><value>Gestoppt</value></data>
+    <data name="Observation_PAUSED_PLAYBACK" xml:space="preserve"><value>Pausiert</value></data>
+    <data name="Observation_TRANSITIONING" xml:space="preserve"><value>Wechselt Wiedergabe</value></data>
+    <data name="Observation_NO_MEDIA_PRESENT" xml:space="preserve"><value>Keine Medien</value></data>
+    <data name="Observation_OK" xml:space="preserve"><value>Normal</value></data>
+    <data name="Observation_ERROR_OCCURRED" xml:space="preserve"><value>Wiedergabefehler</value></data>
+    <data name="Observation_STATION_MODE" xml:space="preserve"><value>WLAN-Client</value></data>
+    <data name="Observation_WiFi" xml:space="preserve"><value>WLAN</value></data>
+    <data name="Observation_ETHERNET" xml:space="preserve"><value>Ethernet</value></data>
+    <data name="Observation_SonosNet" xml:space="preserve"><value>SonosNet</value></data>
+  <data name="CollectorDiagnostics" xml:space="preserve"><value>Erfassungsdiagnose</value></data>
+  <data name="CollectorSweepDuration" xml:space="preserve"><value>Dauer des letzten Erfassungsdurchlaufs</value></data>
+  <data name="CollectorProbeAttempts" xml:space="preserve"><value>Beschreibungsproben seit Collectorstart</value></data>
+  <data name="CollectorProbeFailures" xml:space="preserve"><value>Fehlgeschlagene Beschreibungsproben</value></data>
+  <data name="CollectorProbeTimeouts" xml:space="preserve"><value>Timeouts bei Beschreibungsproben</value></data>
+  <data name="CollectorDiscoveryProbed" xml:space="preserve"><value>Gepr&#252;fte Adressen der letzten Vollsuche</value></data>
+  <data name="CollectorDiscoveryFound" xml:space="preserve"><value>Gefundene Ger&#228;te der letzten Vollsuche</value></data>
+  <data name="CollectorProbeCountsHint" xml:space="preserve"><value>Fehler enthalten auch erwartete Nichttreffer der Netzsuche. Das ist keine Ausfallquote bekannter Ger&#228;te. Suchzahlen umfassen nur abgeschlossene, deduplizierte Proben.</value></data>
+  <data name="ProtocolSsdpDescription" xml:space="preserve"><value>SSDP (Simple Service Discovery Protocol) findet Ger&#228;te im lokalen Netz. Der Collector fragt per UDP-Multicast nach Sonos-Ger&#228;ten; diese antworten mit ihrer Adresse. SSDP sammelt selbst keine Metriken.</value></data>
+  <data name="ProtocolSsdpSetup" xml:space="preserve"><value>Wann und wie nutze ich SSDP?</value></data>
+  <data name="ProtocolSsdpWhen" xml:space="preserve"><value>Als zus&#228;tzliche Erkennung im direkt angeschlossenen Sonos-Netz. F&#252;r geroutete Netze oder VLANs reicht normalerweise die vorhandene Suche in den erlaubten IPv4-Netzen.</value></data>
+  <data name="ProtocolSsdpInterfaces" xml:space="preserve"><value>Erfassung und erlaubte Suchnetze konfigurieren. Bei den Schnittstellen die eigene IPv4-Adresse des Collectors eintragen, eine pro Zeile. Die Adresse muss in der API-Laufzeit vorhanden sein; in Docker ist die Host-IP nicht automatisch eine Container-Schnittstelle. Keine Lautsprecher-IP eintragen.</value></data>
+  <data name="ProtocolSsdpNetwork" xml:space="preserve"><value>Das gew&#228;hlte Interface braucht Multicast-Zugang zum Sonos-Segment. Ausgehend UDP an 239.255.255.250:1900 und die Unicast-Antworten zum kurzlebigen Quellport zulassen. Die Suche verwendet TTL 1; normales Routing, mDNS-Freigaben oder ein Docker-Portmapping ersetzen diese Verbindung nicht.</value></data>
+  <data name="ProtocolSsdpLimits" xml:space="preserve"><value>SSDP einschalten und speichern. Das Empfangsfenster begrenzt die Wartezeit (2&#8211;10 Sekunden); das Datagrammlimit begrenzt die Antworten je Interface (1&#8211;256). Auch ung&#252;ltige Antworten verbrauchen das Limit.</value></data>
+  <data name="ProtocolSsdpVerify" xml:space="preserve"><value>Nach der n&#228;chsten Vollsuche Kandidaten, Schnittstellenfehler und Begrenzungen auf der Erfassungsseite pr&#252;fen. Ein Kandidat wird erst nach erfolgreicher HTTP-Ger&#228;teidentifikation auf TCP 1400 &#252;bernommen.</value></data>
+  <data name="ProtocolSsdpFallback" xml:space="preserve"><value>Die vollst&#228;ndige HTTP-Suche in allen erlaubten Netzen l&#228;uft weiterhin. Keine SSDP-Antwort bedeutet daher nicht, dass ein Ger&#228;t offline ist. SSDP erweitert die erlaubten Zielnetze nicht.</value></data>
+  <data name="ProtocolGenaDescription" xml:space="preserve"><value>GENA (General Event Notification Architecture) liefert &#196;nderungshinweise per HTTP. Der Collector abonniert einen Ger&#228;tedienst; der Lautsprecher baut f&#252;r Benachrichtigungen selbst eine Verbindung zur R&#252;ckrufadresse des Collectors auf.</value></data>
+  <data name="ProtocolGenaSetup" xml:space="preserve"><value>Wann und wie nutze ich GENA?</value></data>
+  <data name="ProtocolGenaScope" xml:space="preserve"><value>Hier beschleunigt GENA ausschlie&#223;lich die Gruppentopologie: Ein ZoneGroupTopology-Hinweis st&#246;&#223;t eine aktuelle SOAP-Abfrage an. Lautst&#228;rke, Wiedergabe und Netzwerkraten werden weiterhin regelm&#228;&#223;ig abgefragt.</value></data>
+  <data name="ProtocolGenaAddresses" xml:space="preserve"><value>Erfassung aktivieren. Die Bindeadresse bestimmt das lokale Listener-Interface; 0.0.0.0 bindet alle Interfaces. Als R&#252;ckrufadresse eine vom Lautsprecher erreichbare LAN-IPv4 eintragen, bei Docker meistens die Host-IP. Hier sind weder 0.0.0.0 noch localhost/127.0.0.1 oder eine unerreichbare interne Container-IP geeignet. Keine URL eintragen.</value></data>
+  <data name="ProtocolGenaNetwork" xml:space="preserve"><value>Den R&#252;ckrufport (Standard 48081) von den Sonos-Ger&#228;ten zum Collector freigeben. In Docker denselben TCP-Port am API-Container ver&#246;ffentlichen; Listener und beworbener Port sind identisch. Routen und Firewall m&#252;ssen beide Richtungen erlauben: Collector &#8594; Sonos TCP 1400, Sonos &#8594; R&#252;ckrufadresse TCP R&#252;ckrufport. Speichern erstellt keine Firewallregel oder Portfreigabe.</value></data>
+  <data name="ProtocolGenaTiming" xml:space="preserve"><value>GENA einschalten und speichern. Die Abonnementdauer ist eine Anfrage; das Ger&#228;t bestimmt die tats&#228;chliche Laufzeit und der Collector erneuert automatisch. Das Initial-Zeitlimit pr&#252;ft die erste Meldung; der Mindestabstand begrenzt zus&#228;tzliche ereignisgesteuerte Topologieabfragen.</value></data>
+  <data name="ProtocolGenaVerify" xml:space="preserve"><value>In den Ger&#228;tedetails sowohl &#8222;abonniert&#8220; als auch &#8222;Initialmeldung empfangen&#8220; pr&#252;fen. Eine erfolgreiche Anmeldung allein beweist den R&#252;ckweg nicht. Fehlende Initialmeldung: R&#252;ckrufadresse, Portmapping und Firewall pr&#252;fen. Ger&#228;te ohne passenden Topologiedienst werden nicht abonniert.</value></data>
+  <data name="ProtocolGenaFallback" xml:space="preserve"><value>Regelm&#228;&#223;ige Abfragen bleiben auch bei GENA-Ausfall aktiv. Nach best&#228;tigter Initialmeldung kann ein unver&#228;ndertes System lange still bleiben; eine alte letzte Meldung ist allein kein Ausfallnachweis. SSDP ist f&#252;r GENA nicht erforderlich.</value></data>
+  <data name="MediaControl" xml:space="preserve"><value>Mediensteuerung</value></data>
+  <data name="MediaDescription" xml:space="preserve"><value>Lokale Wiedergabe und Gruppen bedienen</value></data>
+  <data name="MediaSettings" xml:space="preserve"><value>Steuerfreigabe</value></data>
+  <data name="MediaEnabled" xml:space="preserve"><value>Mediensteuerung ist freigegeben.</value></data>
+  <data name="MediaDisabled" xml:space="preserve"><value>Mediensteuerung ist gesperrt.</value></data>
+  <data name="MediaSettingsLink" xml:space="preserve"><value>Freigabe öffnen</value></data>
+  <data name="MediaGrantGeneration" xml:space="preserve"><value>Freigabegeneration</value></data>
+  <data name="MediaGateAmbiguous" xml:space="preserve"><value>Die Antwort zur Freigabeänderung fehlt. Nur dieselbe Anfrage erneut senden.</value></data>
+  <data name="MediaEnable" xml:space="preserve"><value>Steuerung freigeben</value></data>
+  <data name="MediaDisable" xml:space="preserve"><value>Steuerung entziehen</value></data>
+  <data name="MediaBlocked" xml:space="preserve"><value>Ziel dauerhaft gesperrt</value></data>
+  <data name="MediaBlockedHint" xml:space="preserve"><value>Ein früherer Schreibversuch kann verspätet wirken. Nachlesen hebt die Sperre nicht auf.</value></data>
+  <data name="MediaRiskLink" xml:space="preserve"><value>Risikoannahme öffnen</value></data>
+  <data name="MediaRiskWarning" xml:space="preserve"><value>Diese Vorgänge können noch verspätet auf Lautsprecher wirken. Eine Entsperrung verwirft wartende alte Aktionen.</value></data>
+  <data name="MediaOriginalValue" xml:space="preserve"><value>Ursprünglicher Wert</value></data>
+  <data name="MediaDispatchCannotRecall" xml:space="preserve"><value>Der Versand hat bereits begonnen. Diese Aktion kann nicht zurückgerufen oder hier entsperrt werden; Vorgang und Gerät später erneut prüfen.</value></data>
+  <data name="MediaRiskAcknowledge" xml:space="preserve"><value>Ich verstehe, dass ein alter Schreibvorgang noch verspätet wirken kann.</value></data>
+  <data name="MediaAcceptRisk" xml:space="preserve"><value>Benannte Vorgänge entsperren</value></data>
+  <data name="MediaGateUnavailable" xml:space="preserve"><value>Freigabestatus nicht verfügbar; Steuerung bleibt gesperrt.</value></data>
+  <data name="MediaSelectPlayer" xml:space="preserve"><value>Player auswählen</value></data>
+  <data name="MediaNowPlaying" xml:space="preserve"><value>Aktuelle Medien</value></data>
+  <data name="MediaSource" xml:space="preserve"><value>Quelle</value></data>
+  <data name="MediaState" xml:space="preserve"><value>Wiedergabestatus</value></data>
+  <data name="MediaObserved" xml:space="preserve"><value>Beobachtet</value></data>
+  <data name="MediaPosition" xml:space="preserve"><value>Position</value></data>
+  <data name="MediaGroupTarget" xml:space="preserve"><value>Betroffene Räume</value></data>
+  <data name="MediaAmbiguousSend" xml:space="preserve"><value>Die Antwort fehlt. Die Aktion kann ausgeführt worden sein. Nicht als neue Aktion erneut senden.</value></data>
+  <data name="MediaOriginalAction" xml:space="preserve"><value>Ursprüngliche Aktion</value></data>
+  <data name="MediaRetrySame" xml:space="preserve"><value>Dieselbe Anfrage wiederholen</value></data>
+  <data name="MediaCheckOperation" xml:space="preserve"><value>Vorgang prüfen</value></data>
+  <data name="MediaOperation" xml:space="preserve"><value>Vorgang</value></data>
+  <data name="MediaStateDistinction" xml:space="preserve"><value>Annahme, Geräteantwort und beobachteter Zielzustand sind getrennte Schritte.</value></data>
+  <data name="MediaLastReleasedStep" xml:space="preserve"><value>Letzter freigegebener Ausführungsschritt:</value></data>
+  <data name="MediaReleasedStepWarning" xml:space="preserve"><value>Dieser Schritt kann bereits am Gerät wirken.</value></data>
+  <data name="MediaPartialRevoked" xml:space="preserve"><value>Freigabe entzogen: Bereits freigegebene Schritte können wirksam bleiben. Nicht blind wiederholen; Gruppe und Wiedergabe prüfen.</value></data>
+  <data name="MediaPollingStopped" xml:space="preserve"><value>Automatische Vorgangsprüfung beendet. Bei Bedarf manuell prüfen.</value></data>
+  <data name="MediaUnavailable" xml:space="preserve"><value>Kein aktueller Wiedergabezustand verfügbar. Keine Steuerung möglich.</value></data>
+  <data name="MediaGroupPlayback" xml:space="preserve"><value>Gruppenwiedergabe</value></data>
+  <data name="MediaPlayerVolume" xml:space="preserve"><value>Playerlautstärke</value></data>
+  <data name="MediaGroupVolume" xml:space="preserve"><value>Gruppenlautstärke</value></data>
+  <data name="MediaReported" xml:space="preserve"><value>Gemeldet</value></data>
+  <data name="MediaSetVolume" xml:space="preserve"><value>Lautstärke einstellen</value></data>
+  <data name="MediaApplyVolume" xml:space="preserve"><value>Lautstärke übernehmen</value></data>
+  <data name="MediaMute" xml:space="preserve"><value>Stummschalten</value></data>
+  <data name="MediaUnmute" xml:space="preserve"><value>Ton einschalten</value></data>
+  <data name="MediaPlaybackOptions" xml:space="preserve"><value>Wiedergabeoptionen</value></data>
+  <data name="MediaSeekSeconds" xml:space="preserve"><value>Position in Sekunden</value></data>
+  <data name="MediaSeek" xml:space="preserve"><value>Springen</value></data>
+  <data name="MediaPlayMode" xml:space="preserve"><value>Wiedergabemodus</value></data>
+  <data name="MediaModeNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="MediaModeRepeat" xml:space="preserve"><value>Alle wiederholen</value></data>
+  <data name="MediaModeRepeatOne" xml:space="preserve"><value>Titel wiederholen</value></data>
+  <data name="MediaModeShuffle" xml:space="preserve"><value>Zufall</value></data>
+  <data name="MediaModeShuffleRepeat" xml:space="preserve"><value>Zufall wiederholen</value></data>
+  <data name="MediaApplyMode" xml:space="preserve"><value>Modus übernehmen</value></data>
+  <data name="MediaCrossfadeOff" xml:space="preserve"><value>Crossfade ausschalten</value></data>
+  <data name="MediaCrossfadeOn" xml:space="preserve"><value>Crossfade einschalten</value></data>
+  <data name="MediaLibrary" xml:space="preserve"><value>Favoriten und Queue</value></data>
+  <data name="MediaFavorites" xml:space="preserve"><value>Favoriten</value></data>
+  <data name="MediaQueue" xml:space="preserve"><value>Queue</value></data>
+  <data name="MediaPlayFavorite" xml:space="preserve"><value>Favorit starten</value></data>
+  <data name="MediaAppend" xml:space="preserve"><value>An Queue anhängen</value></data>
+  <data name="MediaPlay" xml:space="preserve"><value>Abspielen</value></data>
+  <data name="Previous" xml:space="preserve"><value>Zurück</value></data>
+  <data name="Next" xml:space="preserve"><value>Weiter</value></data>
+  <data name="MediaRemove" xml:space="preserve"><value>Entfernen</value></data>
+  <data name="MediaMoveEarlier" xml:space="preserve"><value>Queueeintrag nach oben verschieben</value></data>
+  <data name="MediaClearQueue" xml:space="preserve"><value>Queue leeren</value></data>
+  <data name="MediaStartStream" xml:space="preserve"><value>Stream starten</value></data>
+  <data name="MediaGrouping" xml:space="preserve"><value>Gruppierung</value></data>
+  <data name="MediaJoinDestination" xml:space="preserve"><value>Zielkoordinator</value></data>
+  <data name="MediaJoin" xml:space="preserve"><value>Gruppe beitreten</value></data>
+  <data name="MediaLeave" xml:space="preserve"><value>Gruppe verlassen</value></data>
+  <data name="MediaGroupingHint" xml:space="preserve"><value>Gruppenänderungen können Wiedergabe und Queue unterbrechen. Stereo- und Heimkinoverbünde werden nur bei angebotener Fähigkeit gesteuert.</value></data>
+  <data name="MediaConfirmAction" xml:space="preserve"><value>Änderung bestätigen</value></data>
+  <data name="MediaSourceChangeWarning" xml:space="preserve"><value>Quelle, Queue oder Gruppierung können sich ändern. Die angezeigte Ausgangslage wird geprüft.</value></data>
+  <data name="MediaUnsupported" xml:space="preserve"><value>Für diese Quelle oder Hardware nicht verfügbar.</value></data>
+  <data name="MediaContextChanged" xml:space="preserve"><value>Quelle, Queue oder Gruppe hat sich geändert. Aktuellen Zustand laden und die Aktion neu prüfen.</value></data>
+  <data name="MediaIdempotencyConflict" xml:space="preserve"><value>Diese Anfrage-ID wurde bereits mit anderen Eingaben verwendet.</value></data>
+  <data name="Observation_queue" xml:space="preserve"><value>Queue</value></data>
+  <data name="Observation_radio" xml:space="preserve"><value>Radio</value></data>
+  <data name="Observation_tv" xml:space="preserve"><value>Fernseher</value></data>
+  <data name="Observation_line-in" xml:space="preserve"><value>Line-In</value></data>
+  <data name="Observation_unknown" xml:space="preserve"><value>Unbekannt</value></data>
+  <data name="MediaAction_resume" xml:space="preserve"><value>Fortsetzen</value></data>
+  <data name="MediaAction_pause" xml:space="preserve"><value>Pause</value></data>
+  <data name="MediaAction_stop" xml:space="preserve"><value>Stopp</value></data>
+  <data name="MediaAction_previous" xml:space="preserve"><value>Zurück</value></data>
+  <data name="MediaAction_next" xml:space="preserve"><value>Weiter</value></data>
+  <data name="MediaAction_volume" xml:space="preserve"><value>Playerlautstärke</value></data>
+  <data name="MediaAction_mute" xml:space="preserve"><value>Player stumm</value></data>
+  <data name="MediaAction_unmute" xml:space="preserve"><value>Player hörbar</value></data>
+  <data name="MediaAction_group-volume" xml:space="preserve"><value>Gruppenlautstärke</value></data>
+  <data name="MediaAction_group-mute" xml:space="preserve"><value>Gruppe stumm</value></data>
+  <data name="MediaAction_group-unmute" xml:space="preserve"><value>Gruppe hörbar</value></data>
+  <data name="MediaAction_seek" xml:space="preserve"><value>Springen</value></data>
+  <data name="MediaAction_mode" xml:space="preserve"><value>Modus</value></data>
+  <data name="MediaAction_crossfade" xml:space="preserve"><value>Crossfade</value></data>
+  <data name="MediaAction_start-favorite" xml:space="preserve"><value>Favorit starten</value></data>
+  <data name="MediaAction_start-stream" xml:space="preserve"><value>Stream starten</value></data>
+  <data name="MediaAction_queue-play" xml:space="preserve"><value>Queueeintrag spielen</value></data>
+  <data name="MediaAction_queue-append" xml:space="preserve"><value>Queueeintrag anhängen</value></data>
+  <data name="MediaAction_queue-remove" xml:space="preserve"><value>Queueeintrag entfernen</value></data>
+  <data name="MediaAction_queue-reorder" xml:space="preserve"><value>Queueeintrag verschieben</value></data>
+  <data name="MediaAction_queue-clear" xml:space="preserve"><value>Queue leeren</value></data>
+  <data name="MediaAction_join" xml:space="preserve"><value>Gruppe beitreten</value></data>
+  <data name="MediaAction_leave" xml:space="preserve"><value>Gruppe verlassen</value></data>
+  <data name="MediaOperation_accepted" xml:space="preserve"><value>Dauerhaft angenommen</value></data>
+  <data name="MediaOperation_dispatch_started" xml:space="preserve"><value>Versand begonnen</value></data>
+  <data name="MediaOperation_device_acknowledged" xml:space="preserve"><value>Geräteantwort erhalten</value></data>
+  <data name="MediaOperation_desired_state_observed" xml:space="preserve"><value>Zielzustand beobachtet</value></data>
+  <data name="MediaOperation_rejected" xml:space="preserve"><value>Abgelehnt</value></data>
+  <data name="MediaOperation_expired" xml:space="preserve"><value>Vor Versand abgelaufen</value></data>
+  <data name="MediaOperation_revoked" xml:space="preserve"><value>Durch Freigabeentzug verworfen</value></data>
+  <data name="MediaOperation_outcome_unknown" xml:space="preserve"><value>Wirkung unklar</value></data>
+  <data name="ApplicationLogs" xml:space="preserve"><value>Anwendungslogs</value></data>
+  <data name="BrowserTimeZone" xml:space="preserve"><value>Browserzeitzone</value></data>
+  <data name="InvalidLocalTime" xml:space="preserve"><value>Die gewählte Ortszeit ist durch die Zeitumstellung ungültig oder doppeldeutig. Bitte eine eindeutige Uhrzeit wählen.</value></data>
+  <data name="LogApplyFilters" xml:space="preserve"><value>Filter anwenden</value></data>
+  <data name="LogAutoRefresh" xml:space="preserve"><value>Alle 10 Sekunden aktualisieren</value></data>
+  <data name="LogCritical" xml:space="preserve"><value>Kritisch</value></data>
+  <data name="LogEntries" xml:space="preserve"><value>Einträge</value></data>
+  <data name="LogError" xml:space="preserve"><value>Fehler</value></data>
+  <data name="LogInformation" xml:space="preserve"><value>Information</value></data>
+  <data name="LogMinimumLevel" xml:space="preserve"><value>Mindestschweregrad</value></data>
+  <data name="LogReadAt" xml:space="preserve"><value>Abgerufen</value></data>
+  <data name="LogsDescription" xml:space="preserve"><value>Die jüngsten Meldungen von API, Collector, Projektionsworker und Weboberfläche.</value></data>
+  <data name="LogSearch" xml:space="preserve"><value>Logs durchsuchen</value></data>
+  <data name="LogService" xml:space="preserve"><value>Dienst</value></data>
+  <data name="LogSkippedLines" xml:space="preserve"><value>nicht lesbare Einträge</value></data>
+  <data name="LogsNetworkHint" xml:space="preserve"><value>Wenn bekannte Geräte gleichzeitig unerreichbar werden oder Suchläufe keine Geräte finden: Erreichbarkeit vom Host und aus dem API-Container vergleichen. Erreicht nur der Host TCP-Port 1400, Docker-Subnetze und Routen auf Überschneidungen mit dem Sonos-Netz prüfen. Timeouts allein beweisen keine Netzüberlappung.</value></data>
+  <data name="LogsNetworkTitle" xml:space="preserve"><value>Netzwerkprobleme eingrenzen</value></data>
+  <data name="LogSource_available" xml:space="preserve"><value>lesbar</value></data>
+  <data name="LogSource_disabled" xml:space="preserve"><value>deaktiviert</value></data>
+  <data name="LogSource_missing" xml:space="preserve"><value>noch keine Logdatei</value></data>
+  <data name="LogSource_unavailable" xml:space="preserve"><value>nicht lesbar / Speicherung fehlgeschlagen</value></data>
+  <data name="LogSources" xml:space="preserve"><value>Logquellen</value></data>
+  <data name="LogsRetentionHint" xml:space="preserve"><value>Neueste Einträge zuerst, maximal 200 Treffer. Je Dienst werden bis zu 3 MiB gespeichert; ältere Einträge werden überschrieben. Aufbewahrte Logs bleiben nach Neustarts sichtbar. Fehlende oder nicht lesbare Quellen werden separat angezeigt.</value></data>
+  <data name="LogsTruncated" xml:space="preserve"><value>Weitere Treffer vorhanden – Filter eingrenzen</value></data>
+  <data name="LogWarning" xml:space="preserve"><value>Warnung</value></data>
+  <data name="NoLogs" xml:space="preserve"><value>Keine passenden Logeinträge</value></data>
+  <data name="NoLogsHint" xml:space="preserve"><value>Filter und Quellenstatus prüfen. Eine leere Liste bestätigt keinen störungsfreien Betrieb.</value></data>
+  <data name="TimeZoneFallback" xml:space="preserve"><value>UTC – Browserzeitzone nicht verfügbar</value></data>
+  <data name="MediaMembershipHelp" xml:space="preserve"><value>Diese Räume spielen gemeinsam. Änderungen werden einzeln geprüft und bestätigt.</value></data>
+  <data name="MediaRemoveRoom" xml:space="preserve"><value>Raum entfernen</value></data>
+  <data name="MediaAddRoom" xml:space="preserve"><value>Raum hinzufügen</value></data>
+  <data name="MediaSelectedRoom" xml:space="preserve"><value>Betroffener Raum</value></data>
+  <data name="MediaNoStandaloneRooms" xml:space="preserve"><value>Keine weiteren einzeln spielenden Räume verfügbar. Einen Raum aus einer anderen Gruppe zuerst dort entfernen.</value></data>
+  <data name="MediaMembershipLimits" xml:space="preserve"><value>Der Koordinator bleibt erhalten. Zum Auflösen alle anderen Räume einzeln entfernen. Stereo- und Heimkinoverbünde sind hier nicht veränderbar. Die Geräteprüfung entscheidet über verfügbare Aktionen.</value></data>
+  <data name="MediaPlaybackDestination" xml:space="preserve"><value>Wo soll es spielen?</value></data>
+  <data name="MediaDestinationHelp" xml:space="preserve"><value>Ein Raum wählt seine aktuelle Gruppe als Wiedergabeziel. Favoriten, Queue und Wiedergabebefehle gelten für alle angezeigten Gruppenräume. Die Auswahl allein startet oder verschiebt keine Musik.</value></data>
+  <data name="MediaManageGroups" xml:space="preserve"><value>Gruppen und Wiedergabe verwalten</value></data>
+</root>

@@ -1,0 +1,60 @@
+{
+  "urls": "http://127.0.0.1:48080",
+  "Backend": {
+    "Enabled": true,
+    "DispatchOutbox": true,
+    "RabbitMq": {
+      "HostName": "127.0.0.1",
+      "Port": 48672,
+      "UserName": "sonosmonitoring_dev",
+      "Password": "<generated-in-.local/dev.env>",
+      "VirtualHost": "/",
+      "ExchangeName": "sonosmonitoring.events"
+    },
+    "MongoConnectionString": "mongodb://127.0.0.1:48017/?replicaSet=rs0&directConnection=true",
+    "MongoDatabase": "sonosmonitoring_dev"
+  },
+  "EventStore": {
+    "Host": "127.0.0.1",
+    "Port": 48432,
+    "DatabaseName": "sonosmonitoring_dev",
+    "User": "sonosmonitoring_dev",
+    "Password": "<generated-in-.local/dev.env>",
+    "EventTableName": "events",
+    "AggregateCommitTableName": "aggregate_commits",
+    "AggregateHeadTableName": "aggregate_heads",
+    "IncrementGlobalAggrTableName": "increments",
+    "UniqueTableName": "uniques",
+    "OutboxTableName": "event_outbox",
+    "OutboxNotificationChannel": "devbone_outbox",
+    "RequireOutboxForEventWrites": true
+  },
+  "Collector": {
+    "Enabled": false,
+    "AllowedCidrs": [],
+    "SeedAddresses": [],
+    "Gena": {
+      "Enabled": false,
+      "ListenAddress": "0.0.0.0",
+      "CallbackAddress": null,
+      "Port": 48081,
+      "RequestedLeaseSeconds": 1800,
+      "InitialNotificationTimeout": "00:00:15",
+      "MinimumPollInterval": "00:00:02"
+    }
+  },
+  "History": {
+    "Enabled": false,
+    "ConnectionString": "",
+    "RetentionDays": 90,
+    "MaxEntries": 20000,
+    "SampleInterval": "00:00:02"
+  },
+  "MediaControl": {
+    "Enabled": true,
+    "ConnectionString": "",
+    "MaxPending": 128,
+    "LifetimeSeconds": 30,
+    "ExecutionSeconds": 30
+  }
+}

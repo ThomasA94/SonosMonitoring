@@ -1,0 +1,85 @@
+@page "/history"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using SonosMonitoring.Contracts.History
+@using SonosMonitoring.Web.Components.History
+@inject MonitoringApiClient Api
+@implements IDisposable
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["History"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["History"]" Description="@Text["HistoryDescription"]"><MudButton OnClick="RestartAsync" Disabled="_busy" Variant="Variant.Outlined">@Text["RestartHistory"]</MudButton></PageHeading>
+<RequestState Busy="_busy" Error="@_error" />
+<div class="filter-bar panel"><label class="field grow">@Text["Identity"]<input @bind="_filter" placeholder="@Text["All"]" maxlength="128" /></label><MudButton OnClick="RestartAsync" Disabled="_busy" Color="Color.Primary">@Text["Query"]</MudButton></div>
+<p class="muted">@Text["JournalHint"]</p>
+@if (_page is not null)
+{
+    <p class="muted">@Text["Retention"]: @_page.RetentionDays @Text["Days"] / @_page.MaxEntries.ToString("N0") @Text["Entries"] · @Text["Updated"]: @Text.Time(_page.LastRecordedAtUtc)</p>
+    @if (_retentionGap) { <MudAlert Severity="Severity.Warning">@Text["RetentionGap"]</MudAlert> }
+    <div class="timeline">
+        @foreach (var entry in _entries)
+        {
+            <article class="panel timeline-entry @(entry.Kind == "gap" ? "gap-entry" : "")"><div class="section-heading"><h2>@Text[entry.Kind]</h2><time>@Text.Time(entry.RecordedAtUtc)</time></div>
+                <p class="technical-code">@(entry.After?.DeviceId ?? entry.Before?.DeviceId) · #@entry.Sequence</p>
+                @if (entry.Reason is not null) { <p>@Text[entry.Reason]</p> }
+                @if (entry.Kind != "gap") { <details><summary>@Text["Details"]</summary><div class="details-grid"><section><h3>@Text["Before"]</h3><ObservationState State="entry.Before" /></section><section><h3>@Text["After"]</h3><ObservationState State="entry.After" /></section></div></details> }
+            </article>
+        }
+    </div>
+    @if (_entries.Count == 0) { <EmptyState Title="@Text["NoHistory"]" Description="@Text["NoHistoryHint"]" /> }
+    <MudButton OnClick="LoadAsync" Disabled="@(_busy || _entries.Count >= 1000)" Variant="Variant.Outlined">@Text["LoadMore"]</MudButton>
+    @if (_entries.Count >= 1000) { <p>@Text["HistoryLimit"]</p><MudButton OnClick="NextSectionAsync" Disabled="_busy">@Text["NextSection"]</MudButton> }
+}
+@code {
+    private readonly CancellationTokenSource _lifetime = new();
+    private readonly List<ObservationChangeDto> _entries = [];
+    private ObservationPageDto? _page;
+    private string? _error;
+    private string _filter = "";
+    private string _activeFilter = "";
+    private long _cursor;
+    private bool _busy;
+    private bool _retentionGap;
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync() => this.LoadAsync();
+    /// <summary>Restarts the cursor only on an explicit filter submission.</summary>
+    private async Task RestartAsync()
+    {
+        this._entries.Clear();
+        this._cursor = 0;
+        this._activeFilter = this._filter;
+        this._retentionGap = false;
+        await this.LoadAsync();
+    }
+    /// <summary>Continues the cursor in a bounded memory window without dropping access to older retained pages.</summary>
+    private async Task NextSectionAsync()
+    {
+        this._entries.Clear();
+        await this.LoadAsync();
+    }
+    /// <summary>Appends a bounded page and detects retention moving beyond the requested cursor.</summary>
+    private async Task LoadAsync()
+    {
+        this._busy = true;
+        string path = "api/collection/history?limit=50&after=" + this._cursor.ToString(CultureInfo.InvariantCulture);
+        if (this._activeFilter.Length > 0)
+        {
+            path += "&deviceId=" + Uri.EscapeDataString(this._activeFilter);
+        }
+        var result = await this.Api.GetAsync<ObservationPageDto>(path, this._lifetime.Token);
+        this._error = result.ErrorCode;
+        if (result.IsSuccess)
+        {
+            this._page = result.Value!;
+            this._retentionGap |= this._page.EarliestCursor > this._cursor + 1;
+            this._entries.AddRange(this._page.Changes.Where(change => this._entries.All(existing => existing.Sequence != change.Sequence)));
+            this._cursor = this._page.NextCursor;
+        }
+        this._busy = false;
+    }
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        this._lifetime.Cancel();
+        this._lifetime.Dispose();
+        GC.SuppressFinalize(this);
+    }
+}

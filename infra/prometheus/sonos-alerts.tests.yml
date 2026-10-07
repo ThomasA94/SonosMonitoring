@@ -1,0 +1,526 @@
+rule_files:
+  - sonos-alerts.yml
+
+evaluation_interval: 15s
+
+tests:
+  - name: device failure must remain continuous for five minutes
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x12'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x12'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x12'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x12'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0x12'
+    alert_rule_test:
+      - eval_time: 4m45s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+    promql_expr_test:
+      - expr: ALERTS{alertname="SonosDeviceDescriptionUnavailable",alertstate="pending"}
+        eval_time: 4m45s
+        exp_samples:
+          - labels: 'ALERTS{alertname="SonosDeviceDescriptionUnavailable",alertstate="pending",job="sonosmonitoring-api",instance="api-a",device_id="living-room",severity="warning",scope="device"}'
+            value: 1
+
+  - name: short recovery resets the device alert pending timer
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x10'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x10'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x10'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x10'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0 0 1 0x7'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="flapping"}'
+        values: '0 1 0 1 0 1 0 1 0 1 0'
+    alert_rule_test:
+      - eval_time: 7m45s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+    promql_expr_test:
+      - expr: ALERTS{alertname="SonosDeviceDescriptionUnavailable",alertstate="pending"}
+        eval_time: 7m45s
+        exp_samples:
+          - labels: 'ALERTS{alertname="SonosDeviceDescriptionUnavailable",alertstate="pending",job="sonosmonitoring-api",instance="api-a",device_id="living-room",severity="warning",scope="device"}'
+            value: 1
+
+  - name: recovery and rebound during keep firing retain one alert instance
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x11'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x11'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x11'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x11'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0x5 1 0 1x3'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 7m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 9m30s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 10m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+
+  - name: API down has its own alert and suppresses child device alerts
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0x3 1x7'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x10'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x10'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x10'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0x10'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: SonosApiUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: SonosMonitoring metrics endpoint is unavailable.
+      - eval_time: 2m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+      - eval_time: 4m30s
+        alertname: SonosApiUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: SonosMonitoring metrics endpoint is unavailable.
+      - eval_time: 4m30s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SonosApiUnavailable
+        exp_alerts: []
+      - eval_time: 8m45s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+      - eval_time: 9m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+
+  - name: collector interruption is isolated by instance and enabled state
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="stale-enabled"}'
+        values: '1x8'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="stale-enabled"}'
+        values: '1x8'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="stale-enabled"}'
+        values: '0x8'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="stale-enabled"}'
+        values: '30x8'
+      - series: 'up{job="sonosmonitoring-api",instance="absent-enabled"}'
+        values: '1x8'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="absent-enabled"}'
+        values: '1x8'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="absent-enabled"}'
+        values: '30x8'
+      - series: 'up{job="sonosmonitoring-api",instance="disabled"}'
+        values: '1x8'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="disabled"}'
+        values: '0x8'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="disabled"}'
+        values: '30x8'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="stale-enabled",device_id="stale-device"}'
+        values: '0x8'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="disabled",device_id="disabled-device"}'
+        values: '0x8'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: SonosCollectorInterrupted
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: absent-enabled
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: Enabled Sonos collector has no current heartbeat.
+      - eval_time: 2m45s
+        alertname: SonosCollectorInterrupted
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: absent-enabled
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: Enabled Sonos collector has no current heartbeat.
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: stale-enabled
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: Enabled Sonos collector has no current heartbeat.
+      - eval_time: 6m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+    promql_expr_test:
+      - expr: sonos:collector_observing
+        eval_time: 4m
+        exp_samples: []
+
+  - name: a long configured heartbeat budget keeps observation healthy
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="slow-heartbeat"}'
+        values: '1x7'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="slow-heartbeat"}'
+        values: '1x7'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="slow-heartbeat"}'
+        values: '0x7'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="slow-heartbeat"}'
+        values: '600x7'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SonosCollectorInterrupted
+        exp_alerts: []
+    promql_expr_test:
+      - expr: sonos:collector_observing
+        eval_time: 5m
+        exp_samples:
+          - labels: 'sonos:collector_observing{job="sonosmonitoring-api",instance="slow-heartbeat"}'
+            value: 1
+
+  - name: device gating is per Sonos scrape target and ignores unrelated jobs
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x7'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x7'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x7'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x7'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0x7'
+      - series: 'up{job="sonosmonitoring-api",instance="api-b"}'
+        values: '1x7'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-b"}'
+        values: '1x7'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-b"}'
+        values: '0x7'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-b"}'
+        values: '30x7'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-b",device_id="bedroom"}'
+        values: '0x7'
+      # An expired heartbeat on api-b must not borrow the healthy gate of api-a.
+      - series: 'up{job="other",instance="api-a"}'
+        values: '0x7'
+      - series: 'sonos_collector_enabled{job="other",instance="api-a"}'
+        values: '1x7'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="other",instance="api-a"}'
+        values: '30x7'
+      - series: 'sonos_device_probe_success{job="other",instance="api-a",device_id="other-room"}'
+        values: '0x7'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 5m
+        alertname: SonosApiUnavailable
+        exp_alerts: []
+      - eval_time: 5m
+        alertname: SonosCollectorInterrupted
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-b
+              severity: warning
+              scope: collection
+            exp_annotations:
+              summary: Enabled Sonos collector has no current heartbeat.
+    promql_expr_test:
+      - expr: (sonos_device_probe_success{job="sonosmonitoring-api"} == 0) and on (job, instance) sonos:collector_observing
+        eval_time: 5m
+        exp_samples:
+          - labels: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+            value: 0
+
+  - name: a stale device series stops alerting without creating a recovery signal
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x9'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x9'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x9'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x9'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}'
+        values: '0x5 stale'
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 7m45s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: living-room
+              severity: warning
+              scope: device
+            exp_annotations:
+              summary: Sonos player description remains unavailable to the collector.
+      - eval_time: 8m15s
+        alertname: SonosDeviceDescriptionUnavailable
+        exp_alerts: []
+    promql_expr_test:
+      - expr: sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="living-room"}
+        eval_time: 6m15s
+        exp_samples: []
+
+  - name: API recovery preserves occurrence time and waits through a rebound
+    start_timestamp: 1700000000
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0x2 1 0 1x8'
+      - series: 'up{job="sonosmonitoring-api",instance="api-b"}'
+        values: '0x12'
+    promql_expr_test:
+      - expr: sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable"}
+        eval_time: 2m15s
+        exp_samples:
+          - labels: 'sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable",job="sonosmonitoring-api",instance="api-a",severity="warning",scope="collection"}'
+            value: 1700000000
+          - labels: 'sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable",job="sonosmonitoring-api",instance="api-b",severity="warning",scope="collection"}'
+            value: 1700000000
+      - expr: ALERTS{alertname="SonosApiRecovered",alertstate="firing"}
+        eval_time: 6m45s
+        exp_samples: []
+    alert_rule_test:
+      - eval_time: 7m15s
+        alertname: SonosApiRecovered
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              severity: info
+              scope: collection
+            exp_annotations:
+              summary: SonosMonitoring metrics endpoint has recovered.
+
+  - name: collector recovery requires its own fresh observation
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x9'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x9'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0x3 240+60x5'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '75x9'
+    alert_rule_test:
+      - eval_time: 5m45s
+        alertname: SonosCollectorRecovered
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: SonosCollectorRecovered
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              severity: info
+              scope: collection
+            exp_annotations:
+              summary: Sonos collector heartbeat has resumed.
+
+  - name: device recovery requires matching current description evidence
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x12'
+      - series: 'sonos_collector_enabled{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x12'
+      - series: 'sonos_collector_heartbeat_timestamp_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '0+60x12'
+      - series: 'sonos_collector_heartbeat_max_age_seconds{job="sonosmonitoring-api",instance="api-a"}'
+        values: '120x12'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="fresh-device"}'
+        values: '0x5 1x7'
+      - series: 'sonos_source_observation_fresh{job="sonosmonitoring-api",instance="api-a",device_id="fresh-device",source="description"}'
+        values: '0x5 1x7'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="stale-device"}'
+        values: '0x5 1x7'
+      - series: 'sonos_source_observation_fresh{job="sonosmonitoring-api",instance="api-a",device_id="stale-device",source="description"}'
+        values: '0x12'
+      - series: 'sonos_device_probe_success{job="sonosmonitoring-api",instance="api-a",device_id="missing-device"}'
+        values: '0x5 stale'
+      - series: 'sonos_source_observation_fresh{job="sonosmonitoring-api",instance="api-a",device_id="missing-device",source="description"}'
+        values: '0x5 stale'
+    alert_rule_test:
+      - eval_time: 8m45s
+        alertname: SonosDeviceDescriptionRecovered
+        exp_alerts: []
+      - eval_time: 9m30s
+        alertname: SonosDeviceDescriptionRecovered
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: fresh-device
+              severity: info
+              scope: device
+            exp_annotations:
+              summary: Sonos player description was successfully observed again.
+      - eval_time: 10m
+        alertname: SonosDeviceDescriptionRecovered
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              device_id: fresh-device
+              severity: info
+              scope: device
+            exp_annotations:
+              summary: Sonos player description was successfully observed again.
+
+  - name: brief API failure and missing recovery evidence do not claim recovery
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="brief-failure"}'
+        values: '0 1x8'
+      - series: 'up{job="sonosmonitoring-api",instance="vanished-after-failure"}'
+        values: '0x2 stale _x6'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: SonosApiRecovered
+        exp_alerts: []
+    promql_expr_test:
+      - expr: sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable",instance="brief-failure"}
+        eval_time: 6m
+        exp_samples: []
+      - expr: ALERTS{alertname="SonosApiRecovered",alertstate="firing"}
+        eval_time: 6m
+        exp_samples: []
+
+  - name: recovery history expires after twenty four hours
+    start_timestamp: 1700000000
+    interval: 1m
+    input_series:
+      - series: 'up{job="sonosmonitoring-api",instance="api-a"}'
+        values: '1x1450'
+      - series: 'sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable",job="sonosmonitoring-api",instance="api-a",severity="warning",scope="collection"}'
+        values: '1700000000 _x1440'
+    promql_expr_test:
+      - expr: max_over_time(sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable"}[24h])
+        eval_time: 23h59m
+        exp_samples:
+          - labels: '{alertname="SonosApiUnavailable",job="sonosmonitoring-api",instance="api-a",severity="warning",scope="collection"}'
+            value: 1700000000
+      - expr: max_over_time(sonos:alert_firing_started_timestamp_seconds{alertname="SonosApiUnavailable"}[24h])
+        eval_time: 24h15m
+        exp_samples: []
+    alert_rule_test:
+      - eval_time: 23h59m
+        alertname: SonosApiRecovered
+        exp_alerts:
+          - exp_labels:
+              job: sonosmonitoring-api
+              instance: api-a
+              severity: info
+              scope: collection
+            exp_annotations:
+              summary: SonosMonitoring metrics endpoint has recovered.
+      - eval_time: 24h15m
+        alertname: SonosApiRecovered
+        exp_alerts: []

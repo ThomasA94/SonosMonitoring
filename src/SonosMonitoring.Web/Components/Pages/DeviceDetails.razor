@@ -1,0 +1,25 @@
+@page "/devices/{DeviceKey}"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+@using SonosMonitoring.Web.Components.Collection
+@using SonosMonitoring.Web.Components.Monitoring
+@using SonosMonitoring.Web.Components.MediaControl
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["DeviceDetails"] · SonosMonitoring</PageTitle>
+<a class="back-link" href="/devices">← @Text["BackDevices"]</a>
+<PageHeading Title="@(Device?.RoomName ?? Text["DeviceDetails"])" Description="@(Device?.ModelName ?? DeviceKey)"><MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+@if (Device is { } device)
+{
+    <DeviceObservation Device="device" />
+    <div class="quick-links"><a href="@("/metrics?device=" + Uri.EscapeDataString(device.DeviceId))"><strong>@Text["Metrics"] ↗</strong></a><a href="@("/groups?reporter=" + Uri.EscapeDataString(device.DeviceId))"><strong>@Text["Groups"] ↗</strong></a></div>
+    <MonitoringPolicy DeviceKey="@device.DeviceId" @key="device.DeviceId" />
+    <MediaPanel DeviceKey="@device.DeviceId" Devices="@Snapshot!.Devices" @key="(nameof(MediaPanel), device.DeviceId)" />
+}
+else if (Snapshot is not null) { <EmptyState Title="@Text["NoResults"]" Description="@Text["UnknownDevice"]" /> }
+@code {
+    /// <summary>Gets or sets the escaped route's canonical player identity.</summary>
+    [Parameter] public string DeviceKey { get; set; } = "";
+    /// <summary>Gets the selected observation without inventing an unobserved device.</summary>
+    private DeviceSnapshotDto? Device => this.Snapshot?.Devices.FirstOrDefault(device => device.DeviceId == this.DeviceKey);
+}

@@ -1,0 +1,46 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0": {
+      "Devbone.Frameworks.Ddd": {
+        "type": "Direct",
+        "requested": "[12.3.2, )",
+        "resolved": "12.3.2",
+        "contentHash": "vgnnmKpiU6Caad5qScWRwFK8chM15ZvzXtyhq7EP9fTFAlgOiTvVbpyGX63QdMFKplY+kZViUiKcgKRDkYEW9w==",
+        "dependencies": {
+          "Devbone.Frameworks.EventProjection.MongoDb": "1.1.3",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.0"
+        }
+      },
+      "Devbone.Frameworks.EventProjection.MongoDb": {
+        "type": "Transitive",
+        "resolved": "1.1.3",
+        "contentHash": "qCvcWtRqHMDM+HQnqOwPsLvxiptFiA+HSJGPJYfrbKGV6ovmmsGADnEpt8xI/viBXid6C8ALtQRfmE4MW5oJdA==",
+        "dependencies": {
+          "MongoDB.Bson": "3.10.0"
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "L3AdmZ1WOK4XXT5YFPEwyt0ep6l8lGIPs7F5OOBZc77Zqeo01Of7XXICy47628sdVl0v/owxYJTe86DTgFwKCA=="
+      },
+      "Microsoft.Extensions.Logging.Abstractions": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "FU/IfjDfwaMuKr414SSQNTIti/69bHEMb+QKrskRb26oVqpx3lNFXMjs/RC9ZUuhBhcwDM2BwOgoMw+PZ+beqQ==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
+        }
+      },
+      "MongoDB.Bson": {
+        "type": "Transitive",
+        "resolved": "3.10.0",
+        "contentHash": "dpM9EXd3evUW7qPpSjfWshPYjbD26rxm+e32LWNDpRWBZZZo4WaO5Azy/Xro55u3IZ/8u1Z4hCZnlI72Y+/5jg=="
+      },
+      "sonosmonitoring.platform": {
+        "type": "Project"
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">     <ItemGroup>
+        <ProjectReference Include="../SonosMonitoring.Application/SonosMonitoring.Application.csproj" />
+        <ProjectReference Include="../SonosMonitoring.Infrastructure/SonosMonitoring.Infrastructure.csproj" />
+        <ProjectReference Include="../SonosMonitoring.Contracts/SonosMonitoring.Contracts.csproj" />
+        <ProjectReference Include="../SonosMonitoring.Observability/SonosMonitoring.Observability.csproj" />
+    </ItemGroup>
+</Project>

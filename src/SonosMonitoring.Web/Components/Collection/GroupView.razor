@@ -1,0 +1,42 @@
+<div class="toolbar"><MudButton OnClick="() => _map = true" Variant="@(_map ? Variant.Filled : Variant.Outlined)" Color="Color.Primary">@Text["Map"]</MudButton><MudButton OnClick="() => _map = false" Variant="@(_map ? Variant.Outlined : Variant.Filled)">@Text["List"]</MudButton></div>
+@if (Groups.Count == 0) { <EmptyState Title="@Text["NoGroups"]" Description="@Text["NoGroupsHint"]" /> }
+else if (_map)
+{
+    <TopologyGraph Groups="Groups" Devices="Devices" Offline="Offline" />
+}
+else
+{
+    @foreach (var group in Groups)
+    {
+        <section class="panel"><h3>@Text["Group"] · @group.GroupId</h3><p>@Text["Coordinator"]: @Name(group.CoordinatorDeviceId)</p><ul class="member-list">
+            @foreach (var member in group.Members)
+            {
+                <li><strong>@(member.RoomName ?? Name(member.DeviceId))</strong><span class="technical-code">@member.DeviceId</span>
+                    @if (member.ParentDeviceId is not null) { <span>@Text["Parent"]: @Name(member.ParentDeviceId)</span> }
+                    @if (member.IsInvisible is true) { <span>@Text["Hidden"]</span> }
+                    @if (Devices.FirstOrDefault(device => device.DeviceId == member.DeviceId) is { } observed) { <DeviceLiveSummary Device="observed" Offline="Offline" /> }
+                    @if (Offline == false && Devices.Any(device => device.DeviceId == member.DeviceId)) { <a href="@("/devices/" + Uri.EscapeDataString(member.DeviceId))">@Text["Details"] →</a> }
+                </li>
+            }
+        </ul>
+        @if (Offline == false && Devices.Any(device => device.DeviceId == group.CoordinatorDeviceId))
+        {
+            <a class="media-button" href="@("/media?device=" + Uri.EscapeDataString(group.CoordinatorDeviceId))">@Text["MediaManageGroups"] →</a>
+        }
+        </section>
+    }
+}
+<p class="muted section-space">@Text["TopologyLimits"]</p>
+
+@code {
+    private bool _map = true;
+    /// <summary>Gets or sets groups from one reporter only.</summary>
+    [Parameter] public IReadOnlyList<TopologyGroupDto> Groups { get; set; } = [];
+    /// <summary>Gets or sets known observations for safe detail links.</summary>
+    [Parameter] public IReadOnlyList<DeviceSnapshotDto> Devices { get; set; } = [];
+    /// <summary>Gets or sets whether observations belong to an imported document.</summary>
+    [Parameter] public bool Offline { get; set; }
+    /// <summary>Resolves a label without upgrading a topology reference into a discovered device.</summary>
+    /// <param name="id">Reported player identity.</param>
+    private string Name(string id) => this.Devices.FirstOrDefault(device => device.DeviceId == id)?.RoomName ?? id;
+}

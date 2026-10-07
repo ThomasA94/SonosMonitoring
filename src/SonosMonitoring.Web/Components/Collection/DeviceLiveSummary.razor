@@ -1,0 +1,45 @@
+<div class="device-live-summary">
+    <p>@Device.ModelName &middot; @Device.Address</p>
+    @foreach (string line in DevicePresentation.Lines(Device, Text)) { <p class="live-line">@line</p> }
+    <p>@Text["Monitoring"]: @Text[Device.MonitoringEnabled is true ? "Enabled" : Device.MonitoringEnabled is false ? "Disabled" : "Unknown"]
+        &middot; @Text["EffectiveInterval"]: @(Device.EffectiveIntervalSeconds is { } seconds ? Text.Number(seconds) + " " + Text["Seconds"] : Text["Unknown"])</p>
+    @if (Device.InterfaceStatus.ErrorCode is { } code)
+    {
+        <p class="muted">@Text[code is "monitoring_disabled" or "policy_unavailable" or "unsupported" or "not_supported" or "diagnostics_not_due" ? DevicePresentation.Status(Device.InterfaceStatus) + "Hint" : "RequestFailed"]</p>
+        @if (Offline == false && code is "monitoring_disabled" or "policy_unavailable")
+        {
+            <p><a class="monitoring-link" href="@("/devices/" + Uri.EscapeDataString(Device.DeviceId) + "#monitoring")">@Text["ReviewMonitoring"] &rarr;</a></p>
+        }
+    }
+    <dl>
+        <dt>@Text["SoftwareVersion"]</dt><dd>@(Device.SoftwareVersion ?? Text["Unknown"])</dd>
+        <dt>@Text["HardwareVersion"]</dt><dd>@(Device.HardwareVersion ?? Text["Unknown"])</dd>
+        <dt>@Text["ModelNumber"]</dt><dd>@(Device.ModelNumber ?? Text["Unknown"])</dd>
+        <dt>@Text["Wireless"]</dt><dd><SourceBadge Source="Device.WirelessStatus" /> &middot; @Text.Time(Device.WirelessStatus.LastSuccessUtc)</dd>
+        <dt>@Text["WifiMode"]</dt><dd>@Text.Observation(Device.Wireless?.WifiMode)</dd>
+        <dt>@Text["ConnectionType"]</dt><dd>@Text.Observation(Device.Wireless?.ConnectionType)</dd>
+        <dt>@Text["SonosNetDisabled"]</dt><dd>@Text[Device.Wireless?.SonosNetDisabled is true ? "Yes" : Device.Wireless?.SonosNetDisabled is false ? "No" : "Unknown"]</dd>
+        <dt>@Text["Ethernet"]</dt><dd><SourceBadge Source="Device.EthernetStatus" /> &middot; @Text.Time(Device.EthernetStatus.LastSuccessUtc)</dd>
+        @foreach (var port in Device.EthernetPorts)
+        {
+            <dt>@Text["Port"] @port.Port</dt><dd>@Text[port.LinkUp ? "LinkUp" : "LinkDown"] &middot; @Text["ReportedSpeed"]: @(port.ReportedSpeed?.ToString() ?? Text["Unknown"])</dd>
+        }
+        <dt>@Text["Playback"]</dt><dd><SourceBadge Source="Device.PlaybackStatus" /> &middot; @Text.Observation(Device.Playback?.TransportState) &middot; @Text.Observation(Device.Playback?.TransportStatus)</dd>
+        <dt>@Text["Volume"]</dt><dd><SourceBadge Source="Device.VolumeStatus" /> &middot; @(Device.Volume is { } volume ? volume.ToString() + " / 100" : Text["Unknown"])</dd>
+        <dt>@Text["Muted"]</dt><dd>@Text[Device.Muted is true ? "Yes" : Device.Muted is false ? "No" : "Unknown"]</dd>
+    </dl>
+    @if (Device.ProbeDurationSeconds is { } duration) { <p>@Text["ProbeLatency"]: @Text.Number(duration) @Text["Seconds"]</p> }
+    <p class="muted">@Text["NetworkObservationHint"]</p>
+    @if (DevicePresentation.Rate(Device) is { } rate)
+    {
+        <p class="muted">@Text["RateSample"]: @Text.Time(rate.SampledAtUtc) &middot; @Text.Number(rate.IntervalSeconds) @Text["Seconds"] &middot; @Text["RateSelectionHint"]</p>
+    }
+    <p class="muted">@Text["LastNotification"]: @Text.Time(Device.Gena.LastNotificationUtc) &middot; @Text["InitialReceived"]: @Text[Device.Gena.InitialNotificationReceived ? "Yes" : "No"]</p>
+    @if (Device.Gena.ErrorCode is not null) { <p class="technical-code">GENA: @Device.Gena.ErrorCode</p> }
+</div>
+@code {
+    /// <summary>Gets or sets observations shared by details, graph selection and group list.</summary>
+    [Parameter, EditorRequired] public DeviceSnapshotDto Device { get; set; } = null!;
+    /// <summary>Gets or sets whether live monitoring links must be suppressed for imported snapshots.</summary>
+    [Parameter] public bool Offline { get; set; }
+}

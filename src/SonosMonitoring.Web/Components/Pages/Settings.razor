@@ -1,0 +1,125 @@
+@page "/settings"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using SonosMonitoring.Web.Components.Collection
+@inject MonitoringApiClient Api
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Settings"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["Settings"]" Description="@Text["SettingsDescription"]"><MudButton OnClick="LoadAsync" Disabled="_busy" Variant="Variant.Outlined">@Text["Reload"]</MudButton></PageHeading>
+<RequestState Busy="_busy" Error="@_error" />
+@if (_saved) { <MudAlert Severity="Severity.Success" role="status">@Text["SettingsSaved"]</MudAlert> }
+@if (_pending is not null) { <MudAlert Severity="Severity.Warning">@Text["SettingsPending"]</MudAlert><MudButton OnClick="SaveAsync" Disabled="_busy" Color="Color.Primary">@Text["SettingsRetry"]</MudButton> }
+@if (_settings is not null)
+{
+    <p>@Text["SettingsHint"]</p>
+    <form @onsubmit="SaveAsync" @onsubmit:preventDefault>
+        <fieldset disabled="@(_busy || _pending is not null || _conflict)" class="settings-form">
+            <section class="panel"><h2>@Text["Networks"]</h2>
+                <MudSwitch T="bool" @bind-Value="_settings.Enabled" Color="Color.Primary" Label="@Text["AcquisitionEnabled"]" />
+                <p class="muted">@Text["NetworkHint"]</p>
+                <div class="details-grid"><label class="field">@Text["AllowedCidrs"]<textarea rows="4" @bind="_cidrs" placeholder="192.168.1.0/24"></textarea></label>
+                <label class="field">@Text["SeedAddresses"]<textarea rows="4" @bind="_seeds" placeholder="192.168.1.20"></textarea></label></div>
+            </section>
+            <section class="panel"><h2>@Text["TimingLimits"]</h2><div class="settings-grid">
+                <DurationField Label="@Text["PollInterval"]" @bind-Value="_settings.PollInterval" Minimum="1" Maximum="86400" /><DurationField Label="@Text["DiscoveryInterval"]" @bind-Value="_settings.DiscoveryInterval" Minimum="1" Maximum="604800" /><DurationField Label="@Text["StaleAfter"]" @bind-Value="_settings.StaleAfter" Minimum="1" Maximum="604800" /><DurationField Label="@Text["RequestTimeout"]" @bind-Value="_settings.RequestTimeout" Minimum="1" Maximum="60" /><DurationField Label="@Text["SweepTimeout"]" @bind-Value="_settings.SweepTimeout" Minimum="1" Maximum="600" />
+                <label class="field">@Text["MaxScanAddresses"]<input type="number" required min="1" max="65536" step="1" @bind="_settings.MaxScanAddresses" /></label><label class="field">@Text["MaxKnownDevices"]<input type="number" required min="1" max="65536" step="1" @bind="_settings.MaxKnownDevices" /></label><label class="field">@Text["MaxTopologyCandidates"]<input type="number" required min="1" max="256" step="1" @bind="_settings.MaxTopologyCandidates" /></label><label class="field">@Text["MaxParallelism"]<input type="number" required min="1" max="64" step="1" @bind="_settings.MaxParallelism" /></label><label class="field">@Text["MaxResponseBytes"]<input type="number" required min="1024" max="1048576" step="1" @bind="_settings.MaxResponseBytes" /></label>
+            </div></section>
+            <section class="panel"><h2>SSDP</h2><SsdpHelp /><MudSwitch T="bool" @bind-Value="_settings.SsdpEnabled" Color="Color.Primary" Label="@Text["SsdpEnabled"]" /><p class="muted">@Text["SsdpHint"]</p>
+                <label class="field">@Text["SsdpInterfaceAddresses"]<textarea rows="2" @bind="_interfaces"></textarea></label>
+                <div class="settings-grid"><DurationField Label="@Text["SsdpSearchWindow"]" @bind-Value="_settings.SsdpSearchWindow" Minimum="2" Maximum="10" /><label class="field">@Text["SsdpMaxDatagrams"]<input type="number" required min="1" max="256" step="1" @bind="_settings.SsdpMaxDatagrams" /></label></div>
+            </section>
+            <section class="panel"><h2>GENA</h2><GenaHelp /><MudSwitch T="bool" @bind-Value="_settings.Gena.Enabled" Color="Color.Primary" Label="@Text["GenaEnabled"]" /><p class="muted">@Text["GenaHint"]</p>
+                <div class="settings-grid"><label class="field">@Text["GenaListenAddress"]<input @bind="_settings.Gena.ListenAddress" /></label><label class="field">@Text["GenaCallbackAddress"]<input @bind="_settings.Gena.CallbackAddress" /></label>
+                <label class="field">@Text["GenaPort"]<input type="number" required min="1" max="65535" step="1" @bind="_settings.Gena.Port" /></label><label class="field">@Text["GenaRequestedLeaseSeconds"]<input type="number" required min="30" max="86400" step="1" @bind="_settings.Gena.RequestedLeaseSeconds" /></label><DurationField Label="@Text["GenaInitialNotificationTimeout"]" @bind-Value="_settings.Gena.InitialNotificationTimeout" Minimum="1" Maximum="300" /><DurationField Label="@Text["GenaMinimumPollInterval"]" @bind-Value="_settings.Gena.MinimumPollInterval" Minimum="1" Maximum="60" /></div>
+            </section>
+            <MudButton ButtonType="ButtonType.Submit" Disabled="@(_busy || _pending is not null || _conflict)" Variant="Variant.Filled" Color="Color.Primary">@Text["SaveSettings"]</MudButton>
+        </fieldset>
+    </form>
+    <p class="muted section-space">@Text["SettingsScope"]</p>
+}
+@code {
+    private CollectorSettingsDto? _settings;
+    private CollectorConfigurationDto? _pending;
+    private Guid _revision;
+    private Guid _requestId;
+    private string _cidrs = "";
+    private string _seeds = "";
+    private string _interfaces = "";
+    private string? _error;
+    private bool _busy;
+    private bool _saved;
+    private bool _conflict;
+
+    /// <inheritdoc />
+    protected override Task OnInitializedAsync() => this.LoadAsync();
+
+    /// <summary>Loads the authoritative configuration only on explicit navigation or reload.</summary>
+    private async Task LoadAsync()
+    {
+        this._busy = true;
+        this._error = null;
+        this._saved = false;
+        var result = await this.Api.GetAsync<CollectorConfigurationDto>("api/collection/configuration");
+        if (result.Value is { } document)
+        {
+            this.Adopt(document);
+            this._pending = null;
+            this._conflict = false;
+        }
+        else { this._error = this.Text.Error(result.ErrorCode ?? "request.failed"); }
+        this._busy = false;
+    }
+
+    /// <summary>Retains the exact request and identity until a definitive response is received.</summary>
+    private async Task SaveAsync()
+    {
+        if (this._busy || this._settings is null) { return; }
+        this._busy = true;
+        this._error = null;
+        this._saved = false;
+        if (this._pending is null)
+        {
+            this._settings.AllowedCidrs = Lines(this._cidrs);
+            this._settings.SeedAddresses = Lines(this._seeds);
+            this._settings.SsdpInterfaceAddresses = Lines(this._interfaces);
+            this._pending = new(this._revision, this._settings);
+            this._requestId = Guid.NewGuid();
+        }
+        var result = await this.Api.PostAsync<CollectorConfigurationDto>("api/collection/configuration", this._pending, this._requestId);
+        if (result.Value is { } document)
+        {
+            this.Adopt(document);
+            this._pending = null;
+            this._saved = true;
+        }
+        else
+        {
+            this._error = result.ErrorCode switch
+            {
+                "collection.configuration.invalid" => this.Text["SettingsInvalid"],
+                "collection.configuration.storage" => this.Text["SettingsStorage"],
+                _ => this.Text.Error(result.ErrorCode ?? "request.failed")
+            };
+            if (result.StatusCode is 400 or 409)
+            {
+                this._pending = null;
+                this._conflict = result.StatusCode == 409;
+            }
+        }
+        this._busy = false;
+    }
+
+    /// <summary>Adopts a confirmed revision and formats editable address lists.</summary>
+    /// <param name="document">Current server configuration.</param>
+    private void Adopt(CollectorConfigurationDto document)
+    {
+        this._revision = document.Revision;
+        this._settings = document.Settings;
+        this._cidrs = string.Join(Environment.NewLine, document.Settings.AllowedCidrs);
+        this._seeds = string.Join(Environment.NewLine, document.Settings.SeedAddresses);
+        this._interfaces = string.Join(Environment.NewLine, document.Settings.SsdpInterfaceAddresses);
+    }
+
+    /// <summary>Splits explicitly entered addresses without adding inferred network targets.</summary>
+    /// <param name="value">Multiline user input.</param>
+    private static List<string> Lines(string value) => value.Split(['\r', '\n', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+}

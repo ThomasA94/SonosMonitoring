@@ -1,0 +1,35 @@
+name: sonosmonitoring-tests
+
+services:
+  postgres:
+    image: postgres:17.11-bookworm@sha256:051f7b7b3abdd564d5d1bd1e8c4b9c1b6e77087d1dd22020ede611c096a272e0
+    environment:
+      POSTGRES_DB: sonosmonitoring_tests
+      POSTGRES_USER: sonosmonitoring_test
+      POSTGRES_PASSWORD: sonosmonitoring_test_password
+    ports:
+      - "127.0.0.1:48433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonosmonitoring_test -d sonosmonitoring_tests"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  rabbitmq:
+    image: rabbitmq:4.1.8-management@sha256:3574a8edaca320282b9c848f0b2661566b7e74f52c1b590f401b10224d294642
+    environment:
+      RABBITMQ_DEFAULT_USER: sonosmonitoring_test
+      RABBITMQ_DEFAULT_PASS: sonosmonitoring_test_password
+    ports:
+      - "127.0.0.1:48673:5672"
+
+  mongo:
+    image: mongo:8.0.30-noble@sha256:f40b97b97ce805c48ab428ce4422180ae0ef0de6dacadf1e32c6e6a1cbc9353d
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "127.0.0.1:48018:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ ping: 1 }).ok === 1 ? 0 : 1)"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

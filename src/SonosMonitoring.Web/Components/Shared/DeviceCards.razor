@@ -1,0 +1,14 @@
+<div class="device-grid">
+    @foreach (var device in Devices)
+    {
+        <a class="device-card" href="@("/devices/" + Uri.EscapeDataString(device.DeviceId))">
+            <div class="device-card-top"><span class="speaker-icon" aria-hidden="true">▥</span><SourceBadge Source="device.Description" /></div>
+            <h3>@(device.RoomName ?? device.DeviceId)</h3><p>@(device.ModelName ?? Text["UnknownModel"])</p>
+            <div class="device-card-foot"><span>@device.Address</span><span aria-hidden="true">↗</span></div>
+        </a>
+    }
+</div>
+@code {
+    /// <summary>Gets or sets devices already filtered by the containing page.</summary>
+    [Parameter] public IEnumerable<DeviceSnapshotDto> Devices { get; set; } = [];
+}

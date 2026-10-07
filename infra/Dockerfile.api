@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.12-noble@sha256:2d584d8147faddb0d678c5748d47953e5b8e18621ed4fb7049a91381d9d7746f
+# Apply the published OpenSSL fix until the pinned upstream image includes it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --only-upgrade libssl3t64=3.0.13-0ubuntu3.16 openssl=3.0.13-0ubuntu3.16 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY --chown=app:app artifacts/publish/api/ ./
+RUN mkdir -p /app/collector-data && chown app:app /app/collector-data
+RUN mkdir -p /app/application-logs && chown app:app /app/application-logs
+ENV urls=http://0.0.0.0:8080
+ENV AllowedHosts=*
+USER app
+EXPOSE 8080 48081
+ENTRYPOINT ["dotnet", "SonosMonitoring.Api.dll"]

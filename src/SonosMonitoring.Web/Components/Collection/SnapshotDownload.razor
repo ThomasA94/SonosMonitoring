@@ -1,0 +1,32 @@
+@inject MonitoringApiClient Api
+@inject IJSRuntime JavaScript
+<div>
+    <MudButton OnClick="DownloadAsync" Disabled="_busy" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Download">@Text[_busy ? "Loading" : "Download"]</MudButton>
+    @if (_error is not null) { <p class="form-error" role="alert">@Text.Error(_error)</p> }
+</div>
+@code {
+    private bool _busy;
+    private string? _error;
+    /// <summary>Downloads the API's reduced document and reports failures without navigating away.</summary>
+    private async Task DownloadAsync()
+    {
+        this._busy = true;
+        try
+        {
+            var result = await this.Api.DownloadAsync(CancellationToken.None);
+            this._error = result.ErrorCode;
+            if (result.IsSuccess)
+            {
+                await this.JavaScript.InvokeVoidAsync("sonosDownload", result.Value);
+            }
+        }
+        catch (JSException)
+        {
+            this._error = "download.failed";
+        }
+        finally
+        {
+            this._busy = false;
+        }
+    }
+}

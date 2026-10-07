@@ -1,0 +1,30 @@
+@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["Overview"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["OverviewTitle"]" Description="@Text["OverviewDescription"]">
+    <MudButton Variant="Variant.Outlined" OnClick="RefreshAsync" Disabled="Busy" StartIcon="@Icons.Material.Filled.Refresh">@Text["Refresh"]</MudButton>
+</PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+@if (Snapshot is { } snapshot)
+{
+    <div class="hero-panel">
+        <div><div class="eyebrow">@Text["CurrentObservation"]</div><h2>@Text[snapshot.Enabled ? "CollectionActive" : "CollectionDisabled"]</h2><p>@Text[snapshot.Enabled ? "ObservationHint" : "EnableCollectorHint"]</p><a href="/system">@Text["ViewSystem"] <span aria-hidden="true">→</span></a></div>
+        <div class="signal-art" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat"><span>@Text["DiscoveredDevices"]</span><strong>@snapshot.Devices.Count</strong><small>@Text["CurrentCache"]</small></div>
+        <div class="stat"><span>@Text["SearchRanges"]</span><strong>@snapshot.Ranges.Count</strong><small>@Text["ConfiguredRanges"]</small></div>
+        <div class="stat"><span>@Text["Heartbeat"]</span><strong class="stat-time">@Text.Time(snapshot.HeartbeatUtc)</strong><small>@Text["NotDeviceHealth"]</small></div>
+        <div class="stat"><span>@Text["Updated"]</span><strong class="stat-time">@Text.Time(ReceivedAt)</strong><small>@Text["RefreshEvery10"]</small></div>
+    </div>
+    @if (snapshot.CapacityExceeded) { <MudAlert Severity="Severity.Warning">@Text["CapacityExceeded"]</MudAlert> }
+    <div class="section-heading"><h2>@Text["YourDevices"] <span class="count">@snapshot.Devices.Count</span></h2><a href="/devices">@Text["ViewAll"] →</a></div>
+    @if (snapshot.Devices.Count == 0)
+    {
+        <div class="panel"><EmptyState Title="@Text["NoDevices"]" Description="@Text["NoDevicesHint"]" /></div>
+    }
+    else { <DeviceCards Devices="snapshot.Devices.Take(6)" /> }
+    <div class="quick-links"><a href="/metrics"><strong>@Text["Metrics"] ↗</strong><p>@Text["MetricsDescription"]</p></a><a href="/snapshots"><strong>@Text["Snapshots"] ↗</strong><p>@Text["SnapshotDescription"]</p></a></div>
+}

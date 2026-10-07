@@ -1,0 +1,59 @@
+name: Application
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      NuGetPackageSourceCredentials_github-sharedshelf01: Username=${{ github.actor }};Password=${{ secrets.DEVBONE_PACKAGES_TOKEN }};ValidAuthenticationTypes=Basic
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Build, contracts, unit, integration and E2E
+        shell: pwsh
+        run: ./scripts/verify.ps1 -IncludeInfrastructure
+      - name: Publish Linux container artifacts
+        shell: pwsh
+        run: ./scripts/publish.ps1 -BuildImages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tests/browser/package-lock.json
+      - name: Verify locally shipped graph assets
+        run: |
+          npm ci --prefix src/SonosMonitoring.Web --ignore-scripts
+          npm run verify-vendor --prefix src/SonosMonitoring.Web
+      - name: Desktop and mobile browser journeys
+        working-directory: tests/browser
+        env:
+          TEST_WEB_PUBLISHED: '1'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+          node media.cjs
+      - name: Start and verify the Linux images
+        shell: pwsh
+        run: |
+          ./scripts/test-infrastructure.ps1 Up
+          try { ./scripts/smoke-containers.ps1 }
+          finally { ./scripts/test-infrastructure.ps1 Down }
+          ./scripts/smoke-web.ps1
+      - name: Check application images for HIGH and CRITICAL vulnerabilities
+        shell: pwsh
+        run: ./scripts/scan-images.ps1
+      - name: Test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            artifacts/test-results/
+            artifacts/security/*-vulnerabilities.json

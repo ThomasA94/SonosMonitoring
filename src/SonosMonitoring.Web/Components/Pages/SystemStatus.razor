@@ -1,0 +1,29 @@
+@page "/system"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inherits CollectionPageBase
+<UiProviders OnTimeZoneChanged="StateHasChanged" />
+<PageTitle>@Text["System"] · SonosMonitoring</PageTitle>
+<PageHeading Title="@Text["System"]" Description="@Text["SystemDescription"]"><MudButton OnClick="RefreshAsync" Disabled="Busy" Variant="Variant.Outlined">@Text["Refresh"]</MudButton></PageHeading>
+<RequestState Busy="Busy" Error="@Error" />
+<MudButton Href="/settings" Variant="Variant.Filled" Color="Color.Primary">@Text["Settings"] →</MudButton>
+@if (Snapshot is { } snapshot)
+{
+    <div class="details-grid section-space"><section class="panel"><h2>@Text["Monitoring"]</h2><dl><dt>@Text["Enabled"]</dt><dd>@Text[snapshot.Enabled ? "Yes" : "No"]</dd><dt>@Text["Heartbeat"]</dt><dd>@Text.Time(snapshot.HeartbeatUtc)</dd><dt>@Text["LastSweep"]</dt><dd>@Text.Time(snapshot.LastSweepUtc)</dd><dt>@Text["DiscoveredDevices"]</dt><dd>@snapshot.Devices.Count</dd><dt>@Text["LimitReached"]</dt><dd>@Text[snapshot.CapacityExceeded ? "Yes" : "No"]</dd></dl></section>
+        <section class="panel collector-diagnostics"><h2>@Text["CollectorDiagnostics"]</h2><dl>
+            <dt>@Text["CollectorSweepDuration"]</dt><dd>@(snapshot.SweepDurationSeconds is { } duration ? Text.Number(duration) + " " + Text["Seconds"] : Text["Unknown"])</dd>
+            <dt>@Text["CollectorProbeAttempts"]</dt><dd>@snapshot.ProbeAttemptsTotal</dd>
+            <dt>@Text["CollectorProbeFailures"]</dt><dd>@snapshot.ProbeFailuresTotal</dd>
+            <dt>@Text["CollectorProbeTimeouts"]</dt><dd>@snapshot.ProbeTimeoutsTotal</dd>
+            <dt>@Text["CollectorDiscoveryProbed"]</dt><dd>@snapshot.DiscoveryAddressesProbed</dd>
+            <dt>@Text["CollectorDiscoveryFound"]</dt><dd>@snapshot.DiscoveryDevicesFound</dd>
+        </dl><p class="muted">@Text["CollectorProbeCountsHint"]</p></section>
+        <section class="panel"><h2>SSDP</h2><dl><dt>@Text["Enabled"]</dt><dd>@Text[snapshot.Ssdp.Enabled ? "Yes" : "No"]</dd><dt>@Text["LastAttempt"]</dt><dd>@Text.Time(snapshot.Ssdp.LastAttemptUtc)</dd><dt>@Text["LastSuccess"]</dt><dd>@Text.Time(snapshot.Ssdp.LastCompletedUtc)</dd><dt>@Text["Candidates"]</dt><dd>@snapshot.Ssdp.CandidateCount</dd><dt>@Text["Errors"]</dt><dd>@snapshot.Ssdp.FailedInterfaces</dd><dt>@Text["LimitReached"]</dt><dd>@Text[snapshot.Ssdp.LimitReached ? "Yes" : "No"]</dd></dl><p class="technical-code">@snapshot.Ssdp.ErrorCode</p></section>
+        <section class="panel"><h2>@Text["TopologySource"] / @Text["Discovery"]</h2><dl><dt>@Text["LastAttempt"]</dt><dd>@Text.Time(snapshot.TopologyDiscovery.LastSelectionUtc)</dd><dt>@Text["Candidates"]</dt><dd>@snapshot.TopologyDiscovery.CandidateCount</dd><dt>@Text["LimitReached"]</dt><dd>@Text[snapshot.TopologyDiscovery.LimitReached ? "Yes" : "No"]</dd></dl></section>
+    </div>
+    <section class="panel"><h2>@Text["SearchRanges"]</h2>@if (snapshot.Ranges.Count == 0) { <p>@Text["NoRanges"]</p> }
+        @foreach (var range in snapshot.Ranges)
+        {
+            <article class="range-card"><h3>@range.Cidr</h3><dl><dt>@Text["LastAttempt"]</dt><dd>@Text.Time(range.LastAttemptUtc)</dd><dt>@Text["LastSuccess"]</dt><dd>@Text.Time(range.LastCompletedUtc)</dd><dt>@Text["SourceQuality"]</dt><dd>@Text[range.LastAttemptUtc is null ? "Unobserved" : range.LastAttemptSucceeded ? "Available" : "Failed"]</dd><dt>@Text["Probed"]</dt><dd>@range.AddressesProbed</dd><dt>@Text["Found"]</dt><dd>@range.DevicesFound</dd></dl><p class="technical-code">@range.ErrorCode</p></article>
+        }
+    </section>
+}
