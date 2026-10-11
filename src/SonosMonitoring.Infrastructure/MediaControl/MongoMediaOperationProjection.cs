@@ -6,7 +6,7 @@ using SonosMonitoring.Platform;
 namespace SonosMonitoring.Infrastructure.MediaControl;
 
 /// <summary>Checks the standard merged document watermark using the existing projection database.</summary>
-public sealed class MongoMediaOperationProjection : IMediaOperationProjection
+public sealed class MongoMediaOperationProjection : IMediaOperationProjection, IMediaAdmissionCandidates
 {
     private readonly IMongoCollection<BsonDocument> _collection;
 
@@ -22,5 +22,20 @@ public sealed class MongoMediaOperationProjection : IMediaOperationProjection
             Builders<BsonDocument>.Filter.Eq("tenantId", MonitoringNames.TENANT);
         var document = await this._collection.Find(filter).FirstOrDefaultAsync(ct);
         return document is null ? null : document["eventSequence"].ToInt64();
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<string>> ReadAsync(string? after, CancellationToken ct)
+    {
+        var filters = Builders<BsonDocument>.Filter;
+        var filter = filters.Eq("tenantId", MonitoringNames.TENANT) & filters.Eq("state.Status", "accepted") &
+            filters.Ne("state.DeviceKey", "installation");
+        if (after is not null)
+        {
+            filter &= filters.Gt("_id", after);
+        }
+        var documents = await this._collection.Find(filter).Sort(Builders<BsonDocument>.Sort.Ascending("_id"))
+            .Project(Builders<BsonDocument>.Projection.Include("_id")).Limit(32).ToListAsync(ct);
+        return documents.Select(document => document["_id"].AsString).ToArray();
     }
 }

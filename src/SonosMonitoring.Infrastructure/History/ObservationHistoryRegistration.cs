@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SonosMonitoring.Application.History;
+using SonosMonitoring.Infrastructure.Collection.Configuration;
 
 namespace SonosMonitoring.Infrastructure.History;
 
@@ -21,11 +22,14 @@ public static class ObservationHistoryRegistration
         {
             throw new InvalidOperationException("History requires a PostgreSQL connection string, retention 1..400 days, 100..100000 entries, and a sampling interval 1..60 seconds.");
         }
-        if (configuration.GetValue("Collector:MaxKnownDevices", 256) > 256)
+        if (configuration.GetValue("Collector:MaxKnownDevices", ObservationHistoryLimits.MAX_KNOWN_DEVICES) >
+            ObservationHistoryLimits.MAX_KNOWN_DEVICES)
         {
-            throw new InvalidOperationException("History supports at most 256 known collector devices.");
+            throw new InvalidOperationException(
+                $"History supports at most {ObservationHistoryLimits.MAX_KNOWN_DEVICES} known collector devices.");
         }
         services.AddSingleton(options);
+        services.AddSingleton<ICollectorHistoryConfigurationGuard, ObservationHistoryConfigurationGuard>();
         services.AddSingleton<PostgresObservationHistory>();
         services.AddSingleton<IObservationHistory>(provider => provider.GetRequiredService<PostgresObservationHistory>());
         services.AddHostedService<ObservationHistoryWorker>();

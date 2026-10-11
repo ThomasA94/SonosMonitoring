@@ -185,6 +185,38 @@ public sealed class PostgresMediaCoordinationStore : IMediaCoordinationStore
     }
 
     /// <inheritdoc />
+    public async Task<CoordinatedMediaOperation?> CloseAdmissionAsync(CoordinatedMediaOperation operation, CancellationToken ct)
+    {
+        await using var connection = await this.OpenAsync(ct);
+        await using var transaction = await connection.BeginTransactionAsync(ct);
+        await LockAsync(connection, transaction, ct);
+        var existing = await ReadOperationAsync(connection, transaction, operation.OperationId, ct);
+        if (existing is not null)
+        {
+            if (existing.Fingerprint != operation.Fingerprint)
+            {
+                throw new MediaCoordinationException("media.idempotency.conflict");
+            }
+            await transaction.CommitAsync(ct);
+            return existing;
+        }
+        // Admission and terminalization share the same lock: a receipt can never become executable after closure.
+        await using var insert = Create(connection, transaction, """
+            INSERT INTO sonos_media.operations(id,fingerprint,generation,targets,payload,accepted_at,expires_at,status,code)
+            SELECT @id,@fingerprint,@generation,@targets,CAST(@payload AS jsonb),@accepted,@expires,
+                CASE WHEN @expires<=clock_timestamp() THEN 'expired' ELSE 'revoked' END,
+                CASE WHEN @expires<=clock_timestamp() THEN 'media.admission.expired' ELSE 'media.grant.revoked' END
+            FROM sonos_media.control
+            WHERE singleton AND (@expires<=clock_timestamp() OR enabled=false OR generation<>@generation)
+            """, ("id", operation.OperationId), ("fingerprint", operation.Fingerprint), ("generation", Guid.Parse(operation.Generation)),
+            ("targets", operation.Targets), ("payload", operation.PayloadJson), ("accepted", operation.AcceptedAtUtc), ("expires", operation.ExpiresAtUtc));
+        await insert.ExecuteNonQueryAsync(ct);
+        var closed = await ReadOperationAsync(connection, transaction, operation.OperationId, ct);
+        await transaction.CommitAsync(ct);
+        return closed;
+    }
+
+    /// <inheritdoc />
     public async Task<CoordinatedMediaOperation?> FindAsync(Guid id, CancellationToken ct)
     {
         await using var connection = await this.OpenAsync(ct);
@@ -213,50 +245,59 @@ public sealed class PostgresMediaCoordinationStore : IMediaCoordinationStore
     /// <inheritdoc />
     public async Task<bool> ReleaseAsync(Guid id, int step, CancellationToken ct)
     {
-        if (await this.OwnsExecutorAsync(ct) == false)
+        MediaExecutorSession? session = this._session;
+        if (session is null)
         {
             return false;
         }
-        // Commit on the ownership connection: losing that session rolls back this release transaction.
-        var connection = this._session!.Connection;
-        await using var transaction = await connection.BeginTransactionAsync(ct);
-        await LockAsync(connection, transaction, ct);
-        var operation = await ReadOperationAsync(connection, transaction, id, ct);
-        if (operation is null || operation.Step + 1 != step || operation.Status is not ("accepted" or "device_acknowledged"))
+
+        return await session.ExecuteAsync(async (connection, token) =>
         {
-            return false;
-        }
-        await using (var authorization = Create(connection, transaction,
-            "SELECT enabled AND generation=@generation AND @expires > clock_timestamp() FROM sonos_media.control WHERE singleton",
-            ("generation", Guid.Parse(operation.Generation)), ("expires", operation.ExpiresAtUtc)))
-        {
-            if ((bool)(await authorization.ExecuteScalarAsync(ct) ?? false) == false)
-            {
-                await UpdateAsync(connection, transaction, id, "revoked", "media.grant.revoked", ct);
-                await transaction.CommitAsync(ct);
-                return false;
-            }
-        }
-        await using (var blockers = Create(connection, transaction, """
-            SELECT EXISTS(SELECT 1 FROM sonos_media.operations WHERE id<>@id AND targets && @targets AND
-            ((status IN ('outcome_unknown','dispatch_started') AND risk_released=false) OR
-            (position<@position AND status IN ('accepted','device_acknowledged'))))
-            """, ("id", id), ("targets", operation.Targets), ("position", operation.Position)))
-        {
-            if ((bool)(await blockers.ExecuteScalarAsync(ct) ?? false))
+            if (connection.State != ConnectionState.Open)
             {
                 return false;
             }
-        }
-        await using (var release = Create(connection, transaction, """
-            INSERT INTO sonos_media.steps(operation,step) VALUES(@id,@step);
-            UPDATE sonos_media.operations SET step=@step,status='dispatch_started' WHERE id=@id
-            """, ("id", id), ("step", step)))
-        {
-            await release.ExecuteNonQueryAsync(ct);
-        }
-        await transaction.CommitAsync(ct);
-        return true;
+
+            // Commit on the ownership connection: losing that session rolls back this release transaction.
+            await using var transaction = await connection.BeginTransactionAsync(token);
+            await LockAsync(connection, transaction, token);
+            var operation = await ReadOperationAsync(connection, transaction, id, token);
+            if (operation is null || operation.Step + 1 != step || operation.Status is not ("accepted" or "device_acknowledged"))
+            {
+                return false;
+            }
+            await using (var authorization = Create(connection, transaction,
+                "SELECT enabled AND generation=@generation AND @expires > clock_timestamp() FROM sonos_media.control WHERE singleton",
+                ("generation", Guid.Parse(operation.Generation)), ("expires", operation.ExpiresAtUtc)))
+            {
+                if ((bool)(await authorization.ExecuteScalarAsync(token) ?? false) == false)
+                {
+                    await UpdateAsync(connection, transaction, id, "revoked", "media.grant.revoked", token);
+                    await transaction.CommitAsync(token);
+                    return false;
+                }
+            }
+            await using (var blockers = Create(connection, transaction, """
+                SELECT EXISTS(SELECT 1 FROM sonos_media.operations WHERE id<>@id AND targets && @targets AND
+                ((status IN ('outcome_unknown','dispatch_started') AND risk_released=false) OR
+                (position<@position AND status IN ('accepted','device_acknowledged'))))
+                """, ("id", id), ("targets", operation.Targets), ("position", operation.Position)))
+            {
+                if ((bool)(await blockers.ExecuteScalarAsync(token) ?? false))
+                {
+                    return false;
+                }
+            }
+            await using (var release = Create(connection, transaction, """
+                INSERT INTO sonos_media.steps(operation,step) VALUES(@id,@step);
+                UPDATE sonos_media.operations SET step=@step,status='dispatch_started' WHERE id=@id
+                """, ("id", id), ("step", step)))
+            {
+                await release.ExecuteNonQueryAsync(token);
+            }
+            await transaction.CommitAsync(token);
+            return true;
+        }, ct);
     }
 
     /// <inheritdoc />
@@ -319,6 +360,11 @@ public sealed class PostgresMediaCoordinationStore : IMediaCoordinationStore
     /// <inheritdoc />
     public async Task<IAsyncDisposable?> AcquireExecutorAsync(CancellationToken ct)
     {
+        if (this._session is { Connection.State: ConnectionState.Open })
+        {
+            return null;
+        }
+
         var builder = new NpgsqlConnectionStringBuilder(this._options.ConnectionString) { Pooling = false };
         var connection = new NpgsqlConnection(builder.ConnectionString);
         try
@@ -344,12 +390,20 @@ public sealed class PostgresMediaCoordinationStore : IMediaCoordinationStore
     public async Task<bool> OwnsExecutorAsync(CancellationToken ct)
     {
         var session = this._session;
-        if (session is null || session.Connection.State != ConnectionState.Open)
+        if (session is null)
         {
             return false;
         }
-        await using var command = Create(session.Connection, null, "SELECT 1");
-        return Convert.ToInt32(await command.ExecuteScalarAsync(ct)) == 1;
+
+        return await session.ExecuteAsync(async (connection, token) =>
+        {
+            if (connection.State != ConnectionState.Open)
+            {
+                return false;
+            }
+            await using var command = Create(connection, null, "SELECT 1");
+            return Convert.ToInt32(await command.ExecuteScalarAsync(token)) == 1;
+        }, ct);
     }
 
     /// <inheritdoc />

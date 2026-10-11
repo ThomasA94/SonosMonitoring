@@ -18,6 +18,12 @@ Geprüfte Referenzen:
   [Kompatibilitätsmatrix](https://github.com/DevboneFrameworks/Devbone-EventDrivenPlatform/blob/379f7bb16ec223f9719c5e6a5b74e7a0fbd19874/docs/compatibility/README.md) und
   [Paketliste](https://github.com/DevboneFrameworks/Devbone-EventDrivenPlatform/blob/379f7bb16ec223f9719c5e6a5b74e7a0fbd19874/docs/compatibility/Directory.Packages.props)
   am Quellcommit `379f7bb16ec223f9719c5e6a5b74e7a0fbd19874`.
+- Die lokale [API-Guide-Kopie](framework/FRAMEWORK_API_GUIDE.md) wurde bytegenau aus
+  `docs/FRAMEWORK_API_GUIDE.md` dieses Commits wiederhergestellt. Ihr Git-Blob-SHA-1 ist
+  `d48603707264f843de9951793cb48b645dffad09`; `git hash-object` auf der lokalen Datei
+  ergab denselben Wert. Der Guide enthält die vollständige Framework-Matrix dieses Commits;
+  der automatisierte Abgleich prüft die in den Projekt-Lockfiles verwendeten Devbone-Pakete
+  sowie zentral verwaltete Devbone-Versionen.
 - Paket-READMEs für EventSourcing, EventProjectionPipeline und Testing am selben Commit;
   heruntergeladene NuGet-Metadaten und tatsächliches Restore-Ergebnis.
 

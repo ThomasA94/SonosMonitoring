@@ -156,6 +156,37 @@ public sealed class ObservationHistoryTests : IClassFixture<IntegrationInfrastru
         Assert.Equal(3, page.MaxEntries);
     }
 
+    /// <summary>Skips row-count scans on unchanged writes while applying a changed cap on a new store's first write.</summary>
+    [Fact]
+    public async Task UnchangedWritesSkipCountRetentionAndNewStoreAppliesChangedCap()
+    {
+        await this.ResetAsync();
+        PostgresObservationHistory store = this.CreateStore(maxEntries: 100000);
+        Guid runId = Guid.NewGuid();
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+        ObservedDevice device = this.CreateDevice("RINCON_RETENTION_UNCHANGED", "192.0.2.71");
+        await store.WriteAsync(runId, now, true, [this.CreateSample(device)], false, CancellationToken.None);
+
+        await using (NpgsqlConnection connection = new(this._infrastructure.EventStoreConnectionString))
+        {
+            await connection.OpenAsync();
+            await using NpgsqlCommand seed = new("""
+                INSERT INTO sonos_history.entries (kind, recorded_at, reason)
+                SELECT 'gap', @recorded_at, 'collector_unavailable'
+                FROM generate_series(1, 100000)
+                """, connection);
+            seed.Parameters.AddWithValue("recorded_at", now);
+            await seed.ExecuteNonQueryAsync();
+        }
+
+        await store.WriteAsync(runId, now.AddSeconds(1), true, [this.CreateSample(device)], false, CancellationToken.None);
+        Assert.Equal(100002, await this.ReadEntryCountAsync());
+
+        PostgresObservationHistory reducedCapStore = this.CreateStore(maxEntries: 100000);
+        await reducedCapStore.WriteAsync(runId, now.AddSeconds(2), true, [this.CreateSample(device)], false, CancellationToken.None);
+        Assert.Equal(100000, await this.ReadEntryCountAsync());
+    }
+
     /// <summary>Fails closed when the installed journal schema version is unsupported.</summary>
     [Fact]
     public async Task VerifyAsyncRejectsUnsupportedSchemaVersion()
@@ -192,6 +223,16 @@ public sealed class ObservationHistoryTests : IClassFixture<IntegrationInfrastru
             WHERE singleton = true;
             """, connection);
         await command.ExecuteNonQueryAsync();
+    }
+
+    /// <summary>Reads the row count from the fixture-owned history schema.</summary>
+    /// <returns>The number of retained entries.</returns>
+    private async Task<long> ReadEntryCountAsync()
+    {
+        await using NpgsqlConnection connection = new(this._infrastructure.EventStoreConnectionString);
+        await connection.OpenAsync();
+        await using NpgsqlCommand command = new("SELECT COUNT(*) FROM sonos_history.entries", connection);
+        return (long)(await command.ExecuteScalarAsync())!;
     }
 
     /// <summary>Creates a store against this test class's unique database.</summary>

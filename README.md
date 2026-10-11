@@ -139,6 +139,7 @@ erklärt Filter, Werte und Datenlücken.
 - [Metrikquellen, Aufbewahrung und Messgrenzen](docs/metriken.md)
 - [Discovery und Netzvoraussetzungen](docs/discovery.md)
 - [Entwicklungsregeln](AGENTS.md)
+- [C#-Code-Review vom 08.10.2026](docs/code-review.md)
 
 Prometheus-Aufbewahrung ist pro Umgebung über `PROMETHEUS_RETENTION` konfigurierbar:
 `400d` ist der Betriebsvorschlag, `7d` der getestete Kurzzeitwert.

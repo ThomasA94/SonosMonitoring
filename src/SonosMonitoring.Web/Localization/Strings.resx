@@ -410,6 +410,7 @@
   <data name="MediaLastReleasedStep" xml:space="preserve"><value>Letzter freigegebener Ausführungsschritt:</value></data>
   <data name="MediaReleasedStepWarning" xml:space="preserve"><value>Dieser Schritt kann bereits am Gerät wirken.</value></data>
   <data name="MediaPartialRevoked" xml:space="preserve"><value>Freigabe entzogen: Bereits freigegebene Schritte können wirksam bleiben. Nicht blind wiederholen; Gruppe und Wiedergabe prüfen.</value></data>
+  <data name="MediaPartialRejected" xml:space="preserve"><value>Ein späterer Geräteschritt wurde abgelehnt. Vorherige bestätigte Schritte bleiben möglicherweise wirksam. Gruppe und Wiedergabe prüfen, bevor Sie den Vorgang erneut ausführen.</value></data>
   <data name="MediaPollingStopped" xml:space="preserve"><value>Automatische Vorgangsprüfung beendet. Bei Bedarf manuell prüfen.</value></data>
   <data name="MediaUnavailable" xml:space="preserve"><value>Kein aktueller Wiedergabezustand verfügbar. Keine Steuerung möglich.</value></data>
   <data name="MediaGroupPlayback" xml:space="preserve"><value>Gruppenwiedergabe</value></data>

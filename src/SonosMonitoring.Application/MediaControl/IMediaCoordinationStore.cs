@@ -37,6 +37,11 @@ public interface IMediaCoordinationStore
     /// <param name="operation">Original domain-committed descriptor.</param>
     /// <param name="ct">Bounded cancellation.</param>
     Task<CoordinatedMediaOperation> AdmitAsync(CoordinatedMediaOperation operation, CancellationToken ct);
+    /// <summary>Closes an unadmitted committed intention only after expiry or grant invalidation, under the admission lock.</summary>
+    /// <param name="operation">Original event-sourced identity, generation, targets and deadline.</param>
+    /// <param name="ct">Bounded cancellation.</param>
+    /// <returns>The existing or terminal operation, or null while admission remains possible.</returns>
+    Task<CoordinatedMediaOperation?> CloseAdmissionAsync(CoordinatedMediaOperation operation, CancellationToken ct);
     /// <summary>Reads an existing admission without changing its identity or generation.</summary>
     /// <param name="id">Operation identity.</param>
     /// <param name="ct">Bounded cancellation.</param>

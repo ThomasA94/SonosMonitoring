@@ -1,8 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using SonosMonitoring.Api;
 using SonosMonitoring.Contracts.Collection;
+using SonosMonitoring.Infrastructure.Collection.Configuration;
+using SonosMonitoring.Infrastructure.History;
 
 namespace SonosMonitoring.E2E.Tests.Collection;
 
@@ -132,9 +135,43 @@ public sealed class CollectorConfigurationTests
         finally { File.Delete(blocker); }
     }
 
+    /// <summary>History capacity validation returns a client error and keeps the saved revision unchanged.</summary>
+    [Fact]
+    public async Task HistoryDeviceLimitRejectsHttpSaveBeforePersistence()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "sonos-history-settings-" + Guid.NewGuid().ToString("N"));
+        string path = Path.Combine(directory, "settings.json");
+        try
+        {
+            await using var api = CreateApi(path, services =>
+                services.AddSingleton<ICollectorHistoryConfigurationGuard, ObservationHistoryConfigurationGuard>());
+            await api.StartAsync();
+            using var client = Client(api);
+            CollectorConfigurationDto original = (await client.GetFromJsonAsync<CollectorConfigurationDto>(
+                "/api/collection/configuration"))!;
+            original.Settings.MaxKnownDevices = ObservationHistoryLimits.MAX_KNOWN_DEVICES + 1;
+
+            using HttpResponseMessage response = await SaveAsync(client, original, Guid.NewGuid());
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            CollectorConfigurationDto unchanged = (await client.GetFromJsonAsync<CollectorConfigurationDto>(
+                "/api/collection/configuration"))!;
+            Assert.Equal(original.Revision, unchanged.Revision);
+            Assert.Equal(ObservationHistoryLimits.MAX_KNOWN_DEVICES, unchanged.Settings.MaxKnownDevices);
+            Assert.False(File.Exists(path));
+            await api.StopAsync();
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            { Directory.Delete(directory, recursive: true); }
+        }
+    }
+
     /// <summary>Builds an API with a dedicated settings file and loopback-only test targets.</summary>
     /// <param name="path">Isolated durable settings file.</param>
-    private static WebApplication CreateApi(string path)
+    /// <param name="configureServices">Optional test-only host services.</param>
+    private static WebApplication CreateApi(string path, Action<IServiceCollection>? configureServices = null)
     {
         var app = ApiHost.Build([], new Dictionary<string, string?>
         {
@@ -144,7 +181,7 @@ public sealed class CollectorConfigurationTests
             ["Collector:AllowLoopback"] = "true",
             ["CollectionSettings:Path"] = path,
             ["Access:ApiKey"] = KEY
-        });
+        }, configureServices);
         app.Urls.Clear();
         app.Urls.Add("http://127.0.0.1:0");
         return app;

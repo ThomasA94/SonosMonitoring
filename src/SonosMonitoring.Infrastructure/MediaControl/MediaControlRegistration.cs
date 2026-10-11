@@ -23,9 +23,10 @@ public static class MediaControlRegistration
             return services;
         }
         if (configuration.GetValue<bool>("Backend:Enabled") == false || options.MaxPending is < 1 or > 1024 ||
-            options.LifetimeSeconds is < 5 or > 300 || options.ExecutionSeconds is < 5 or > 120)
+            options.LifetimeSeconds is < 5 or > 300 || options.ExecutionSeconds is < 5 or > 120 ||
+            options.MaxConcurrentExecutions is < 1 or > 16)
         {
-            throw new InvalidOperationException("Media control requires the backend and bounded queue, lifetime and execution settings.");
+            throw new InvalidOperationException("Media control requires the backend and bounded queue, lifetime, execution and concurrency settings.");
         }
         if (string.IsNullOrWhiteSpace(options.ConnectionString))
         {
@@ -44,15 +45,19 @@ public static class MediaControlRegistration
         services.AddSingleton(options);
         services.AddSingleton<IMediaCoordinationStore, PostgresMediaCoordinationStore>();
         services.AddSingleton<IMediaDeviceGateway, MediaDeviceGateway>();
-        services.AddSingleton<IMediaOperationProjection, MongoMediaOperationProjection>();
+        services.AddSingleton<MongoMediaOperationProjection>();
+        services.AddSingleton<IMediaOperationProjection>(provider => provider.GetRequiredService<MongoMediaOperationProjection>());
+        services.AddSingleton<IMediaAdmissionCandidates>(provider => provider.GetRequiredService<MongoMediaOperationProjection>());
         services.AddScoped<MediaOperationExecutor>();
         services.AddScoped<MediaOperationReader>();
         services.AddScoped(provider => new MediaRequestService(provider.GetRequiredService<MediaOperationExecutor>(),
             provider.GetRequiredService<MediaOperationReader>(), provider.GetRequiredService<IMediaCoordinationStore>(),
-            provider.GetRequiredService<IMediaDeviceGateway>(), options.LifetimeSeconds));
+            provider.GetRequiredService<IMediaDeviceGateway>(), options.LifetimeSeconds, provider.GetRequiredService<MediaAdmissionReconciler>()));
         services.AddScoped<MediaExecutionService>();
+        services.AddScoped<MediaAdmissionReconciler>();
         services.AddHostedService<MediaSchemaGuard>();
         services.AddHostedService<MediaControlWorker>();
+        services.AddHostedService<MediaAdmissionRecoveryWorker>();
         return services;
     }
 }

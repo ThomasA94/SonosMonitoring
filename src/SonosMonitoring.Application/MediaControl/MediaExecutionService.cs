@@ -59,6 +59,8 @@ public sealed class MediaExecutionService
             return;
         }
         bool released = false;
+        int? lastAcknowledgedStep = null;
+        int? currentStep = null;
         try
         {
             var persisted = await this._reader.ReadAsync(operation.OperationId, ct)
@@ -96,7 +98,10 @@ public sealed class MediaExecutionService
                     return;
                 }
                 released = true;
+                currentStep = index;
                 await this._devices.SendAsync(steps[index], ct);
+                lastAcknowledgedStep = index;
+                currentStep = null;
                 if (index + 1 < steps.Count)
                 {
                     await this.RecordAsync(operation.OperationId, "device_acknowledged", "media.step.acknowledged", index);
@@ -110,13 +115,15 @@ public sealed class MediaExecutionService
             HttpRequestException or IOException or OperationCanceledException or FormatException or JsonException)
         {
             bool definite = exception is MediaDeviceException device && device.DefiniteRejection;
+            bool partialRejection = definite && lastAcknowledgedStep is not null && currentStep is not null;
             string code = exception switch
             {
                 MediaCoordinationException coordination => coordination.Code,
                 MediaDeviceException transport => "media." + transport.Code,
                 _ => released ? "media.outcome.unknown" : "media.device.unreachable",
             };
-            await this.RecordAsync(operation.OperationId, released && definite == false ? "outcome_unknown" : "rejected", code);
+            await this.RecordAsync(operation.OperationId, released && definite == false ? "outcome_unknown" : "rejected",
+                partialRejection ? "media.partial.rejected" : code, lastAcknowledgedStep);
         }
     }
 

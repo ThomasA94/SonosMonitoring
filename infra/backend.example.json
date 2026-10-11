@@ -54,6 +54,7 @@
     "Enabled": true,
     "ConnectionString": "",
     "MaxPending": 128,
+    "MaxConcurrentExecutions": 4,
     "LifetimeSeconds": 30,
     "ExecutionSeconds": 30
   }

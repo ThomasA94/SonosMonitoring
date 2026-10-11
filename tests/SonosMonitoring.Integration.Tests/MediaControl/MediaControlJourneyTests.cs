@@ -148,6 +148,14 @@ public sealed class MediaControlJourneyTests : IClassFixture<MediaCoordinationFi
             using HttpRequestMessage disable = Message(HttpMethod.Post, "/api/media/control/disable", Guid.NewGuid());
             using HttpResponseMessage response = await client.SendAsync(disable, deadline.Token);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Keep the device task active over several worker polls. Its command sequence must not
+            // compete with audit synchronization, even though the technical revocation is already visible.
+            await Task.Delay(900, deadline.Token);
+            using (var scope = api.Services.CreateScope())
+            {
+                var active = await scope.ServiceProvider.GetRequiredService<MediaOperationReader>().ReadAsync(id, deadline.Token);
+                Assert.Equal("accepted", active!.State.Status);
+            }
             device.ContinueExecutionPreparation();
             MediaOperationDto result = await AwaitOperationAsync(client, id, "revoked", deadline.Token);
             Assert.Equal("revoked", result.Status);

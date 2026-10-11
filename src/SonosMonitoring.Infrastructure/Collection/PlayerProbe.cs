@@ -14,10 +14,7 @@ public sealed class PlayerProbe : IDisposable
     /// <param name="policy">Outbound target policy.</param>
     /// <param name="options">Request limits.</param>
     public PlayerProbe(Ipv4TargetPolicy policy, CollectorOptions options)
-    {
-        this._policy = policy;
-        this._options = options;
-        this._client = new HttpClient(new SocketsHttpHandler
+        : this(policy, options, new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
             UseProxy = false,
@@ -25,7 +22,18 @@ public sealed class PlayerProbe : IDisposable
             ConnectTimeout = options.RequestTimeout,
             MaxConnectionsPerServer = 2
         })
-        { Timeout = Timeout.InfiniteTimeSpan };
+    {
+    }
+
+    /// <summary>Creates the bounded HTTP client with a supplied transport for isolated tests.</summary>
+    /// <param name="policy">Outbound target policy.</param>
+    /// <param name="options">Request limits.</param>
+    /// <param name="handler">Owned HTTP handler that simulates device responses.</param>
+    internal PlayerProbe(Ipv4TargetPolicy policy, CollectorOptions options, HttpMessageHandler handler)
+    {
+        this._policy = policy;
+        this._options = options;
+        this._client = new HttpClient(handler, true) { Timeout = Timeout.InfiniteTimeSpan };
     }
 
     /// <summary>Reads a fixed local path only if the literal address is allowed.</summary>

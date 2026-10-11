@@ -101,7 +101,7 @@ public static class MediaEndpoints
         {
             return Problem("media.query.invalid", 400);
         }
-        var view = await Required<MediaOperationReader>(context).ReadAsync(id, context.RequestAborted);
+        var view = await Required<MediaAdmissionReconciler>(context).ReconcileAsync(id, context.RequestAborted);
         if (view is null)
         {
             return Problem("media.operation.not_found", 404);

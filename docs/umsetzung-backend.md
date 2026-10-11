@@ -226,6 +226,12 @@ Modell-/Firmware-Kompatibilität aller Geräte.
 | MaxTopologyCandidates | 32 zusätzliche Topologie-Adressen pro Runde; erlaubt 1–256 |
 | StaleAfter | 45 s |
 
+Vollsuchrunden interleaven bekannte Ziele und die bereits netzübergreifend angeordneten
+CIDR-Hosts, deduplizieren sie und rotieren nach den tatsächlich gestarteten Probes.
+Ein Abbruch durch `SweepTimeout` beginnt die nächste Vollsuche deshalb am nächsten
+Ziel. Reguläre Pollrunden für bekannte Geräte bleiben davon unabhängig. Der Cursor
+ist flüchtig und beginnt nach einem Collector-Neustart bzw. Konfigurationswechsel neu.
+
 ### Optionale SSDP-Erkennung (SM-002, SM-016, SM-019)
 
 SSDP bleibt standardmäßig aus. `Collector.SsdpEnabled=true` aktiviert vor jeder Vollsuche
@@ -599,6 +605,15 @@ Keine zusätzliche Verdichtung: Einträge bleiben unverändert bis zur Löschung
 aktuelle Gerätezustände und Checkpoints werden behalten; nach Verdrängung beginnt die nächste
 Beobachtung mit einer neuen Baseline. Ein einzelner Zustand ist auf 256 KiB beschränkt.
 Diese Grenzen sind unabhängig von der mindestens einjährigen numerischen Metrikaufbewahrung.
+
+Bei aktivierter Historie wird die 256er-Grenze auch gegen geladene Einstellungen und
+vor jedem Konfigurations-Save geprüft. Ungültige gespeicherte Einstellungen verhindern
+den Start mit klarer Fehlermeldung; ein ungültiger HTTP-Save liefert 400 und ersetzt
+weder Datei noch laufende Konfiguration. Ohne Historie gelten die allgemeinen Collectorgrenzen.
+Die Mengenretention läuft bei neuen Einträgen sowie beim ersten erfolgreichen Schreibzyklus
+einer Storeinstanz. Unveränderte Folgeproben überspringen den Bestandsscan; die
+Altersretention bleibt aktiv. Neue Einträge und Mengenbereinigung bleiben in derselben
+Transaktion, und eine geänderte Mengenbegrenzung greift beim ersten Schreiben nach Neustart.
 
 `GET /api/collection/history?after=0&limit=100&deviceId=RINCON_...` liefert aufsteigende
 Sequenzen, `nextCursor`, den global frühesten erhaltenen Cursor, `lastRecordedAtUtc` und die

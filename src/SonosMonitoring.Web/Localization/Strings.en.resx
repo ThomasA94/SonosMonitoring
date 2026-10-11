@@ -410,6 +410,7 @@
   <data name="MediaLastReleasedStep" xml:space="preserve"><value>Last released execution step:</value></data>
   <data name="MediaReleasedStepWarning" xml:space="preserve"><value>This step may already affect the device.</value></data>
   <data name="MediaPartialRevoked" xml:space="preserve"><value>Permission revoked: Previously released steps may still take effect. Do not retry blindly; check the group and playback.</value></data>
+  <data name="MediaPartialRejected" xml:space="preserve"><value>A later device step was rejected. Earlier acknowledged steps may still be in effect. Check the group and playback before running the action again.</value></data>
   <data name="MediaPollingStopped" xml:space="preserve"><value>Automatic operation checks have stopped. Check manually when needed.</value></data>
   <data name="MediaUnavailable" xml:space="preserve"><value>No current playback state is available. Controls are unavailable.</value></data>
   <data name="MediaGroupPlayback" xml:space="preserve"><value>Group playback</value></data>

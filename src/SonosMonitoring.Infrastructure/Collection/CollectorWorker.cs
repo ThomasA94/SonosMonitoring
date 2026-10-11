@@ -20,6 +20,7 @@ public sealed class CollectorWorker : BackgroundService
     private readonly CollectorState _state;
     private readonly ILogger<CollectorWorker> _logger;
     private readonly IDeviceCollectionPolicy? _collectionPolicy;
+    private readonly DiscoveryTargetScheduler _discoveryScheduler = new();
 
     /// <summary>Creates the background collector.</summary>
     /// <param name="options">Collection limits and intervals.</param>
@@ -97,7 +98,7 @@ public sealed class CollectorWorker : BackgroundService
     /// <param name="cancellationToken">Sweep deadline and host shutdown.</param>
     /// <param name="stoppingToken">Host shutdown, distinguished from a failed sweep.</param>
     /// <returns>A task for the collection pass.</returns>
-    private async Task CollectAsync(bool fullScan, CancellationToken cancellationToken, CancellationToken stoppingToken)
+    internal async Task CollectAsync(bool fullScan, CancellationToken cancellationToken, CancellationToken stoppingToken)
     {
         HashSet<string> targets = new(StringComparer.Ordinal);
         foreach (string seed in this._options.SeedAddresses)
@@ -122,6 +123,7 @@ public sealed class CollectorWorker : BackgroundService
         }
 
         List<(string Cidr, string Address)> rangeTargets = [];
+        IReadOnlyList<DiscoveryTarget> plan;
         if (fullScan)
         {
             foreach (string candidate in await this._ssdp.DiscoverAsync(cancellationToken))
@@ -129,6 +131,7 @@ public sealed class CollectorWorker : BackgroundService
                 targets.Add(candidate);
             }
 
+            string[] knownTargets = targets.ToArray();
             List<(string Cidr, string[] Hosts)> ranges = this._policy.Ranges
                 .Select(range => (range.ToString(), range.EnumerateHosts(this._options.MaxScanAddresses).ToArray()))
                 .ToList();
@@ -145,6 +148,12 @@ public sealed class CollectorWorker : BackgroundService
                     }
                 }
             }
+
+            plan = this._discoveryScheduler.CreatePlan(knownTargets, rangeTargets);
+        }
+        else
+        {
+            plan = targets.Select(address => new DiscoveryTarget(address, null, 0)).ToArray();
         }
 
         if (targets.Count > this._options.MaxScanAddresses)
@@ -154,14 +163,17 @@ public sealed class CollectorWorker : BackgroundService
 
         DateTimeOffset started = DateTimeOffset.UtcNow;
         System.Collections.Concurrent.ConcurrentDictionary<string, (bool Found, string? Error)> found = new(StringComparer.Ordinal);
+        System.Collections.Concurrent.ConcurrentDictionary<string, byte> startedTargets = new(StringComparer.Ordinal);
         try
         {
-            await Parallel.ForEachAsync(targets, new ParallelOptions
+            await Parallel.ForEachAsync(plan, new ParallelOptions
             {
                 MaxDegreeOfParallelism = this._options.MaxParallelism,
                 CancellationToken = cancellationToken
-            }, async (address, token) =>
+            }, async (target, token) =>
             {
+                string address = target.Address;
+                startedTargets.TryAdd(address, 0);
                 bool success = await this.ProbeAddressAsync(address,
                     (descriptionFound, error) => found[address] = (descriptionFound, error), token, stoppingToken);
                 this._topologyDiscovery.RecordResult(address, success, DateTimeOffset.UtcNow);
@@ -172,6 +184,11 @@ public sealed class CollectorWorker : BackgroundService
             if (stoppingToken.IsCancellationRequested == false)
             {
                 CollectorNetworkDiagnostics.LogTransitions(this._logger, snapshot.Devices, this._state.GetSnapshot().Devices);
+            }
+
+            if (fullScan)
+            {
+                this._discoveryScheduler.RecordStarted(plan, startedTargets.Count);
             }
 
             if (fullScan)

@@ -14,8 +14,7 @@ public sealed class PostgresObservationHistory : IObservationHistory
 {
     private const int CONNECTION_AND_COMMAND_TIMEOUT_SECONDS = 5;
     private const int OPERATION_TIMEOUT_SECONDS = 10;
-    private const int MAX_BATCH_SAMPLES = 256;
-    private const int MAX_CHECKPOINTS = 256;
+    private const int MAX_CHECKPOINTS = ObservationHistoryLimits.MAX_KNOWN_DEVICES;
     private const int MAX_STATE_BYTES = 256 * 1024;
     private const int MAX_PAGE_STATE_BYTES = 4 * 1024 * 1024;
     private const long ADVISORY_LOCK_KEY = 746192058331L;
@@ -28,6 +27,7 @@ public sealed class PostgresObservationHistory : IObservationHistory
     private readonly string _connectionString;
     private readonly int _retentionDays;
     private readonly int _maxEntries;
+    private bool _hasCompletedInitialWrite;
 
     /// <summary>Creates a journal adapter from deployment-supplied connection and retention settings.</summary>
     /// <param name="options">Validated observation-history options.</param>
@@ -91,14 +91,18 @@ public sealed class PostgresObservationHistory : IObservationHistory
             await this.InsertGapAsync(connection, transaction, recordedAtUtc, reason, budget.Token);
         }
 
+        bool hasInsertedEntry = previousRun != runId || storageGap ||
+            (previousObserving is not null && previousObserving != collectorObserving);
         for (int index = 0; index < samples.Count; index++)
         {
-            await this.WriteSampleAsync(connection, transaction, samples[index], serializedStates[index], recordedAtUtc, budget.Token);
+            hasInsertedEntry |= await this.WriteSampleAsync(connection, transaction, samples[index], serializedStates[index], recordedAtUtc, budget.Token);
         }
 
         await this.UpsertMetaAsync(connection, transaction, runId, recordedAtUtc, collectorObserving, budget.Token);
-        await this.ApplyRetentionAsync(connection, transaction, recordedAtUtc, budget.Token);
+        await this.ApplyRetentionAsync(connection, transaction, recordedAtUtc,
+            hasInsertedEntry || this._hasCompletedInitialWrite == false, budget.Token);
         await transaction.CommitAsync(budget.Token);
+        this._hasCompletedInitialWrite = true;
     }
 
     /// <inheritdoc />
@@ -211,7 +215,7 @@ public sealed class PostgresObservationHistory : IObservationHistory
     /// <returns>JSON strings in batch order.</returns>
     private string[] ValidateAndSerializeSamples(IReadOnlyList<ObservationSample> samples)
     {
-        if (samples.Count > MAX_BATCH_SAMPLES)
+        if (samples.Count > ObservationHistoryLimits.MAX_KNOWN_DEVICES)
         {
             throw new ArgumentException("Observation batch exceeds its device limit.", nameof(samples));
         }
@@ -296,7 +300,8 @@ public sealed class PostgresObservationHistory : IObservationHistory
     /// <param name="afterJson">Serialized normalized state.</param>
     /// <param name="recordedAtUtc">Journal sample time.</param>
     /// <param name="ct">Operation cancellation and timeout.</param>
-    private async Task WriteSampleAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, ObservationSample sample,
+    /// <returns>Whether this sample inserted a baseline or change entry.</returns>
+    private async Task<bool> WriteSampleAsync(NpgsqlConnection connection, NpgsqlTransaction transaction, ObservationSample sample,
         string afterJson, DateTimeOffset recordedAtUtc, CancellationToken ct)
     {
         string? beforeJson = null;
@@ -341,6 +346,7 @@ public sealed class PostgresObservationHistory : IObservationHistory
         }
         checkpoint.Parameters.AddWithValue("last_seen", NpgsqlDbType.TimestampTz, recordedAtUtc);
         await checkpoint.ExecuteNonQueryAsync(ct);
+        return exists == false || unchanged == false;
     }
 
     /// <summary>Appends a baseline or changed-state row with explicit JSONB before and after evidence.</summary>
@@ -400,9 +406,10 @@ public sealed class PostgresObservationHistory : IObservationHistory
     /// <param name="connection">Open journal connection.</param>
     /// <param name="transaction">Active journal transaction.</param>
     /// <param name="recordedAtUtc">Journal sample time used as retention reference.</param>
+    /// <param name="enforceEntryCount">Whether this write inserted entries or is the store's first successful write.</param>
     /// <param name="ct">Operation cancellation and timeout.</param>
     private async Task ApplyRetentionAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
-        DateTimeOffset recordedAtUtc, CancellationToken ct)
+        DateTimeOffset recordedAtUtc, bool enforceEntryCount, CancellationToken ct)
     {
         await using (NpgsqlCommand age = this.CreateCommand(connection, transaction,
             "DELETE FROM sonos_history.entries WHERE recorded_at < @cutoff"))
@@ -410,15 +417,16 @@ public sealed class PostgresObservationHistory : IObservationHistory
             age.Parameters.AddWithValue("cutoff", NpgsqlDbType.TimestampTz, recordedAtUtc.AddDays(-this._retentionDays));
             await age.ExecuteNonQueryAsync(ct);
         }
-        await using (NpgsqlCommand count = this.CreateCommand(connection, transaction, """
-            DELETE FROM sonos_history.entries
-            WHERE sequence IN
-            (
-                SELECT sequence FROM sonos_history.entries
-                ORDER BY sequence DESC OFFSET @max_entries
-            )
-            """))
+        if (enforceEntryCount)
         {
+            await using NpgsqlCommand count = this.CreateCommand(connection, transaction, """
+                DELETE FROM sonos_history.entries
+                WHERE sequence IN
+                (
+                    SELECT sequence FROM sonos_history.entries
+                    ORDER BY sequence DESC OFFSET @max_entries
+                )
+                """);
             count.Parameters.AddWithValue("max_entries", NpgsqlDbType.Integer, this._maxEntries);
             await count.ExecuteNonQueryAsync(ct);
         }

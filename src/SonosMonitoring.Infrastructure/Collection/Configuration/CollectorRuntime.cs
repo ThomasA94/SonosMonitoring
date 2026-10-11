@@ -11,6 +11,7 @@ public sealed class CollectorRuntime : IHostedService, ICollectorSnapshotReader,
 {
     private readonly IServiceProvider _host;
     private readonly CollectorConfigurationStore _store;
+    private readonly ICollectorHistoryConfigurationGuard? _historyConfigurationGuard;
     private readonly SemaphoreSlim _gate = new(1);
     private CollectorConfigurationDocument _document;
     private ServiceProvider _generation;
@@ -21,11 +22,15 @@ public sealed class CollectorRuntime : IHostedService, ICollectorSnapshotReader,
     /// <param name="host">Host services supplying environment, logs and optional monitoring policy.</param>
     /// <param name="store">Technical settings persistence.</param>
     /// <param name="defaults">Deployment defaults used before the first web save.</param>
-    public CollectorRuntime(IServiceProvider host, CollectorConfigurationStore store, CollectorOptions defaults)
+    /// <param name="historyConfigurationGuard">Optional constraints imposed by enabled observation history.</param>
+    public CollectorRuntime(IServiceProvider host, CollectorConfigurationStore store, CollectorOptions defaults,
+        ICollectorHistoryConfigurationGuard? historyConfigurationGuard = null)
     {
         this._host = host;
         this._store = store;
+        this._historyConfigurationGuard = historyConfigurationGuard ?? host.GetService<ICollectorHistoryConfigurationGuard>();
         this._document = store.Load(defaults);
+        this._historyConfigurationGuard?.Validate(this._document.Options);
         this._generation = this.CreateGeneration(this._document.Options);
         this._state = this._generation.GetRequiredService<CollectorState>();
     }
@@ -62,6 +67,7 @@ public sealed class CollectorRuntime : IHostedService, ICollectorSnapshotReader,
             options = JsonSerializer.Deserialize<CollectorOptions>(JsonSerializer.Serialize(options))!;
             options.AllowLoopback = this._document.Options.AllowLoopback;
             CollectorConfigurationValidator.Validate(options);
+            this._historyConfigurationGuard?.Validate(options);
             if (requestId == Guid.Empty)
             {
                 throw new ArgumentException("A nonempty save identity is required.", nameof(requestId));

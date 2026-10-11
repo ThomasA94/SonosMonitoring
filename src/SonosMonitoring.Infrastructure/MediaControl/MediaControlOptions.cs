@@ -13,4 +13,6 @@ public sealed class MediaControlOptions
     public int LifetimeSeconds { get; set; } = 30;
     /// <summary>Gets or sets the entire device execution deadline.</summary>
     public int ExecutionSeconds { get; set; } = 30;
+    /// <summary>Gets or sets the maximum number of disjoint operations executed at once.</summary>
+    public int MaxConcurrentExecutions { get; set; } = 4;
 }

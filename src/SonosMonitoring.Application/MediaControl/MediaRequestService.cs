@@ -14,6 +14,7 @@ public sealed class MediaRequestService
     private readonly MediaOperationReader _reader;
     private readonly IMediaCoordinationStore _store;
     private readonly IMediaDeviceGateway _devices;
+    private readonly MediaAdmissionReconciler _admission;
     private readonly int _lifetimeSeconds;
 
     /// <summary>Receives independent domain, technical coordination and device ports.</summary>
@@ -22,14 +23,16 @@ public sealed class MediaRequestService
     /// <param name="store">Durable permission, order and uncertainty coordination.</param>
     /// <param name="devices">Hardened local read and preparation gateway.</param>
     /// <param name="lifetimeSeconds">Dispatch validity period.</param>
+    /// <param name="admission">Reconciliation of previously committed but unadmitted intentions.</param>
     public MediaRequestService(MediaOperationExecutor executor, MediaOperationReader reader, IMediaCoordinationStore store,
-        IMediaDeviceGateway devices, int lifetimeSeconds)
+        IMediaDeviceGateway devices, int lifetimeSeconds, MediaAdmissionReconciler admission)
     {
         this._executor = executor;
         this._reader = reader;
         this._store = store;
         this._devices = devices;
         this._lifetimeSeconds = lifetimeSeconds;
+        this._admission = admission;
     }
 
     /// <summary>Accepts an immutable named action; retries preserve the original stream, generation and admission position.</summary>
@@ -60,6 +63,11 @@ public sealed class MediaRequestService
         }
         if (previous is not null)
         {
+            previous = (await this._admission.ReconcileAsync(id, ct))!;
+            if (previous.State.Status != "accepted")
+            {
+                return previous;
+            }
             var existing = await this._store.FindAsync(id, ct);
             if (existing is not null)
             {

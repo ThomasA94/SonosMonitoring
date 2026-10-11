@@ -7,6 +7,16 @@ Prüfungen. Vorschläge sind noch keine beschlossenen Produktanforderungen. Der 
 unter [Umsetzungsstand Backend](#umsetzungsstand-backend) einschließlich der Frontendergänzungen maßgeblich erfasst; die Abschnitte zur
 ursprünglichen Analyse und Slice-Planung bleiben als Planungshistorie erhalten.
 
+**Code-Review, 08.10.2026:** Zusätzliche Befunde und der tatsächlich ausgeführte Prüfstand
+stehen im [C#-Review](code-review.md). Zuordnung zu bestehenden Anforderungen:
+SM-010/SM-021 → REV-006, SM-002/SM-019 → REV-007,
+SM-013.3/SM-013.8 → REV-008 und REV-010,
+SM-013.4/SM-013.5 → REV-009, SM-010/SM-019 → REV-011,
+SM-020 → REV-012. Befunddetails, Korrekturvorschläge und erforderliche Regressionen werden
+dort geführt. Der Folgeauftrag „setze alles so um wie geplant“ priorisiert die Korrektur
+dieser sieben Befunde. Implementierung und tatsächlich ausgeführte Regressionen werden
+im Review ergänzt; die offenen realen Geräte-, Netz- und Dauerabnahmen bleiben separat.
+
 ## Umsetzungsstand Backend
 
 Stand: 30.09.2026. Diese Tabelle ordnet den aktuellen Backend-Stand den stabilen Anforderungen

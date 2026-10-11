@@ -55,8 +55,9 @@
                 <p>@Text["MediaSelectedRoom"]: @Name(_operation.DeviceKey)</p>
                 <p>@Text["MediaOperation_" + _operation.Status] · <code>@_operation.OperationId</code></p>
                 @if (_operation.Code is not null) { <p><code>@_operation.Code</code></p> }
-                @if (_operation.Step >= 0) { <p>@Text["MediaLastReleasedStep"] @(_operation.Step + 1). @Text["MediaReleasedStepWarning"]</p> }
+                @if (_operation.Step >= 0 && _operation.Code != "media.partial.rejected") { <p>@Text["MediaLastReleasedStep"] @(_operation.Step + 1). @Text["MediaReleasedStepWarning"]</p> }
                 @if (_operation.Code == "media.partial.revoked") { <p class="media-error">@Text["MediaPartialRevoked"]</p> }
+                @if (_operation.Code == "media.partial.rejected") { <p class="media-error">@Text["MediaPartialRejected"]</p> }
                 <p>@Text["MediaStateDistinction"]</p>
                 @if (_operationPolls >= 12 && IsTerminal(_operation) == false) { <p>@Text["MediaPollingStopped"]</p> }
                 <button class="media-button" @onclick="CheckOperationAsync" disabled="@_busy">@Text["MediaCheckOperation"]</button></div>

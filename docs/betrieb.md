@@ -209,6 +209,41 @@ aber nicht blind erneut aus. Für einen Executor ist eine PostgreSQL-Session mit
 Advisory Lock vorgesehen; Sonos-Netzaufrufe laufen außerhalb der kurzen
 Koordinationstransaktionen.
 
+`MediaControl:MaxConcurrentExecutions` begrenzt parallele Vorgänge mit disjunkten
+Zielmengen (Standard 4, erlaubt 1–16). Aktionen auf demselben Player oder überlappenden
+Gruppen behalten ihre dauerhafte Reihenfolge. Die kurzen Freigabetransaktionen laufen
+serialisiert auf der Executorsitzung; beim Beenden wird laufende Arbeit abgebrochen
+und abgewartet, bevor die Eigentümersitzung geschlossen wird.
+
+Nach einem Fehler zwischen Event-Commit und Queue-Aufnahme kann die API zunächst
+`media.admission.pending` liefern. Bis zum ursprünglichen Ablauf ist ein ausdrücklicher
+Retry mit identischer UUID und identischem Body möglich. Nach Ablauf oder Entzug
+schließt die Anwendung den unaufgenommenen Vorgang dauerhaft als `expired` bzw.
+`revoked`; sie verlängert weder Frist noch Freigabegeneration. Die Wiederherstellung
+läuft auch nach einem Neustart im Hintergrund. MongoDB liefert dafür ausschließlich
+Suchhinweise; Event Store und PostgreSQL-Koordination entscheiden autoritativ.
+Bei ausgefallener Projektion bleibt die Hintergrundsuche verzögert; ein direkter
+Vorgangs-GET prüft den autoritativen Abschluss trotzdem, wartet für die Antwort aber
+weiterhin auf den Projektionsstand. Ein gespeicherter Abschluss wird bei einem
+zwischenzeitlich fehlgeschlagenen Audit-Commit erneut synchronisiert.
+
+Eine bereits sichtbare erste Projektion belegt noch keinen abgeschlossenen Outbox-Claim.
+Bei einem Abbruch zwischen Brokerbestätigung und `MarkPublished` kann der nächste
+Stream-Eintrag bis zum Ablauf der Outbox-Lease warten (unveränderter Frameworkstandard:
+5 Minuten). Für die Diagnose Status und Lease des früheren Outbox-Eintrags sowie den
+Merged-Wasserstand prüfen. Weder die kurze `RecoveryInterval`-Taktung noch ein erneuter
+API-Start verkürzen eine noch gültige Lease. Siehe die gebundene
+[Framework-Referenz](framework.md).
+
+`media.partial.rejected` bedeutet: Ein früherer Schritt wurde bestätigt, ein späterer
+Schritt sicher abgelehnt. Beispielsweise kann die Quelle bereits gewechselt sein,
+obwohl das anschließende Abspielen scheiterte. Die Webansicht zeigt dies ausdrücklich;
+vor einer neuen Aktion den tatsächlichen Wiedergabe-/Queuezustand prüfen. Es gibt
+keinen automatischen Ausgleich und keine Wiederholung bereits gesendeter Schritte.
+
+Diese Korrekturen verwenden das vorhandene Medien-Schema Version 1 und die bestehenden
+Eventverträge. Eine Neuinitialisierung oder Datenlöschung ist dafür nicht erforderlich.
+
 Bei `media.outcome.unknown` oder `media.target.blocked` zuerst
 `GET /api/media/operations/{uuid}` und `GET /api/media/control` lesen. Den
 Vorgang, alle `deviceKeys`, Aktion und Wert aus `blocks` dokumentieren. Eine alte
